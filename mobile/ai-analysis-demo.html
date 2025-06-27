@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI動作分析画面 - デモ</title>
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif; 
+            margin: 0; 
+            padding: 20px; 
+            background: #f5f5f5; 
+        }
+        .phone-frame { 
+            max-width: 375px; 
+            margin: 0 auto; 
+            background: #000; 
+            border-radius: 20px; 
+            padding: 8px; 
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3); 
+        }
+        .screen { 
+            background: white; 
+            border-radius: 16px; 
+            overflow: hidden; 
+            min-height: 600px; 
+            position: relative; 
+            display: flex;
+            flex-direction: column;
+        }
+        .header { 
+            background: #2196F3; 
+            color: white; 
+            padding: 20px; 
+            text-align: center; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+        }
+        .camera-section {
+            flex: 0.6;
+            background: #000;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .camera-placeholder {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, #333 25%, transparent 25%), 
+                        linear-gradient(-45deg, #333 25%, transparent 25%), 
+                        linear-gradient(45deg, transparent 75%, #333 75%), 
+                        linear-gradient(-45deg, transparent 75%, #333 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 14px;
+            text-align: center;
+            position: relative;
+        }
+        .camera-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 20px;
+        }
+        .camera-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .exercise-chip {
+            background: rgba(255,255,255,0.9);
+            color: #2196F3;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            border: 1px solid #2196F3;
+        }
+        .flip-btn {
+            background: rgba(0,0,0,0.5);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+        }
+        .recording-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(244,67,54,0.9);
+            padding: 8px 16px;
+            border-radius: 20px;
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .recording-dot {
+            width: 8px;
+            height: 8px;
+            background: white;
+            border-radius: 50%;
+            margin-right: 8px;
+            animation: blink 1s infinite;
+        }
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.3; }
+        }
+        .camera-controls {
+            display: flex;
+            justify-content: center;
+        }
+        .control-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            min-width: 120px;
+        }
+        .start-btn {
+            background: #4CAF50;
+            color: white;
+        }
+        .stop-btn {
+            background: #F44336;
+            color: white;
+        }
+        .analysis-section {
+            flex: 0.4;
+            background: #f5f5f5;
+            overflow-y: auto;
+            padding: 16px;
+        }
+        .analysis-card {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .analysis-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .analysis-title {
+            display: flex;
+            align-items: center;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .robot-icon {
+            margin-right: 8px;
+            color: #2196F3;
+        }
+        .feedback-chip {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            border: 1px solid;
+        }
+        .feedback-good { color: #4CAF50; border-color: #4CAF50; }
+        .feedback-moderate { color: #FF9800; border-color: #FF9800; }
+        .feedback-poor { color: #F44336; border-color: #F44336; }
+        .score-section {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .score-circle {
+            width: 80px;
+            height: 80px;
+            background: #f5f5f5;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin-right: 20px;
+        }
+        .score-value {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .score-unit {
+            font-size: 12px;
+            color: #666;
+        }
+        .score-details {
+            flex: 1;
+        }
+        .score-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 12px;
+        }
+        .score-label {
+            color: #666;
+        }
+        .score-progress {
+            width: 100%;
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+        .score-progress-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 1s ease;
+        }
+        .alignment-section {
+            margin-bottom: 20px;
+        }
+        .section-title {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+        .alignment-grid {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 12px;
+        }
+        .alignment-item {
+            text-align: center;
+        }
+        .alignment-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+        .alignment-chip {
+            padding: 2px 8px;
+            border-radius: 8px;
+            font-size: 10px;
+            border: 1px solid;
+        }
+        .ratio-container {
+            background: #f9f9f9;
+            padding: 8px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .ratio-label {
+            font-size: 12px;
+            color: #333;
+        }
+        .ratio-note {
+            font-size: 10px;
+            color: #666;
+            margin-top: 2px;
+        }
+        .feedback-section {
+            background: #f0f8ff;
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 4px solid #2196F3;
+            margin-bottom: 16px;
+        }
+        .feedback-message {
+            font-size: 14px;
+            color: #333;
+            line-height: 1.4;
+        }
+        .suggestions-section {
+            margin-bottom: 16px;
+        }
+        .suggestion-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 8px;
+        }
+        .suggestion-icon {
+            color: #FF9800;
+            margin-right: 8px;
+            margin-top: 2px;
+        }
+        .suggestion-text {
+            font-size: 12px;
+            color: #333;
+            line-height: 1.4;
+            flex: 1;
+        }
+        .timestamp {
+            font-size: 10px;
+            color: #999;
+            text-align: right;
+            margin-top: 8px;
+        }
+        .analyzing {
+            text-align: center;
+            padding: 20px;
+        }
+        .analyzing-icon {
+            color: #2196F3;
+            margin-bottom: 8px;
+        }
+        .analyzing-text {
+            color: #2196F3;
+            font-weight: bold;
+            margin-bottom: 16px;
+        }
+        .loading-bar {
+            width: 100%;
+            height: 4px;
+            background: #e0e0e0;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        .loading-bar-fill {
+            height: 100%;
+            background: #2196F3;
+            border-radius: 2px;
+            animation: loading 1.5s infinite;
+        }
+        @keyframes loading {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1 style="text-align: center; margin-bottom: 20px;">AI動作分析画面 - デモ</h1>
+    
+    <div class="phone-frame">
+        <div class="screen">
+            <div class="header">
+                <h2>AI動作分析</h2>
+            </div>
+            
+            <!-- カメラセクション -->
+            <div class="camera-section">
+                <div class="camera-placeholder">
+                    <div style="text-align: center;">
+                        <div style="font-size: 48px; margin-bottom: 8px;">📹</div>
+                        <div>カメラビュー<br>(実際の実装ではカメラ映像)</div>
+                    </div>
+                </div>
+                
+                <div class="camera-overlay">
+                    <div class="camera-top">
+                        <div class="exercise-chip">ミニスクワット</div>
+                        <button class="flip-btn">🔄</button>
+                    </div>
+                    
+                    <div id="recording-indicator" class="recording-indicator hidden">
+                        <div class="recording-dot"></div>
+                        <span>AI分析中</span>
+                    </div>
+                    
+                    <div class="camera-controls">
+                        <button id="toggle-btn" class="control-btn start-btn" onclick="toggleAnalysis()">
+                            分析開始
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 分析結果セクション -->
+            <div class="analysis-section">
+                <!-- 分析中表示 -->
+                <div id="analyzing-display" class="analysis-card hidden">
+                    <div class="analyzing">
+                        <div class="analyzing-icon" style="font-size: 24px;">🤖</div>
+                        <div class="analyzing-text">AI分析中...</div>
+                        <div class="loading-bar">
+                            <div class="loading-bar-fill"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 分析結果表示 -->
+                <div id="analysis-result" class="analysis-card hidden">
+                    <div class="analysis-header">
+                        <div class="analysis-title">
+                            <span class="robot-icon">🤖</span>
+                            AI動作分析
+                        </div>
+                        <div id="feedback-chip" class="feedback-chip feedback-moderate">注意</div>
+                    </div>
+                    
+                    <div class="score-section">
+                        <div class="score-circle">
+                            <div id="overall-score" class="score-value" style="color: #FF9800;">65</div>
+                            <div class="score-unit">点</div>
+                        </div>
+                        <div class="score-details">
+                            <div class="score-item">
+                                <span class="score-label">Knee-in問題</span>
+                                <span id="knee-score" style="color: #F44336; font-weight: bold;">35%</span>
+                            </div>
+                            <div class="score-progress">
+                                <div id="score-progress-fill" class="score-progress-fill" style="width: 65%; background: #FF9800;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alignment-section">
+                        <div class="section-title">膝の位置関係</div>
+                        <div class="alignment-grid">
+                            <div class="alignment-item">
+                                <div class="alignment-label">左膝</div>
+                                <div class="alignment-chip feedback-moderate">注意</div>
+                            </div>
+                            <div class="alignment-item">
+                                <div class="alignment-label">右膝</div>
+                                <div class="alignment-chip feedback-good">良好</div>
+                            </div>
+                        </div>
+                        <div class="ratio-container">
+                            <div class="ratio-label">膝幅/足首幅比率: 0.78</div>
+                            <div class="ratio-note">(理想値: 0.8-1.2)</div>
+                        </div>
+                    </div>
+                    
+                    <div class="feedback-section">
+                        <div class="feedback-message">
+                            概ね良好ですが、改善の余地があります。
+                        </div>
+                    </div>
+                    
+                    <div class="suggestions-section">
+                        <div class="section-title">改善提案</div>
+                        <div class="suggestion-item">
+                            <span class="suggestion-icon">💡</span>
+                            <span class="suggestion-text">左膝の位置をつま先の真上に保ちましょう</span>
+                        </div>
+                        <div class="suggestion-item">
+                            <span class="suggestion-icon">💡</span>
+                            <span class="suggestion-text">膝が内側に入りすぎています。膝をつま先の方向に向けましょう</span>
+                        </div>
+                    </div>
+                    
+                    <div class="timestamp">
+                        分析時刻: <span id="analysis-time"></span>
+                    </div>
+                </div>
+                
+                <!-- セッションサマリー -->
+                <div id="session-summary" class="analysis-card hidden">
+                    <div class="section-title" style="text-align: center; font-size: 18px; margin-bottom: 16px;">
+                        セッション分析結果
+                    </div>
+                    
+                    <div style="display: flex; justify-content: space-around; margin-bottom: 20px;">
+                        <div style="text-align: center;">
+                            <div style="font-size: 24px; font-weight: bold; color: #2196F3;">8</div>
+                            <div style="font-size: 12px; color: #666;">分析フレーム</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 24px; font-weight: bold; color: #FF9800;">67</div>
+                            <div style="font-size: 12px; color: #666;">平均スコア</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 24px; font-weight: bold; color: #F44336;">3</div>
+                            <div style="font-size: 12px; color: #666;">問題検出</div>
+                        </div>
+                    </div>
+                    
+                    <div style="background: #fff3cd; padding: 12px; border-radius: 8px; border-left: 4px solid #ffc107; margin-bottom: 20px;">
+                        <div style="font-size: 14px; font-weight: bold; color: #856404; margin-bottom: 8px;">改善提案</div>
+                        <div style="font-size: 12px; color: #856404;">• 膝が内側に入る傾向があります。股関節の動きを意識してください</div>
+                    </div>
+                    
+                    <div style="display: flex; justify-content: space-around;">
+                        <button class="control-btn" style="background: white; color: #2196F3; border: 1px solid #2196F3;" onclick="retryAnalysis()">
+                            再分析
+                        </button>
+                        <button class="control-btn" style="background: #2196F3; color: white;" onclick="completeAnalysis()">
+                            完了
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let isAnalyzing = false;
+        let analysisCount = 0;
+        let analysisInterval;
+
+        function toggleAnalysis() {
+            const toggleBtn = document.getElementById('toggle-btn');
+            const recordingIndicator = document.getElementById('recording-indicator');
+            const analyzingDisplay = document.getElementById('analyzing-display');
+            const analysisResult = document.getElementById('analysis-result');
+            
+            if (!isAnalyzing) {
+                // 分析開始
+                isAnalyzing = true;
+                analysisCount = 0;
+                
+                toggleBtn.textContent = '分析停止';
+                toggleBtn.className = 'control-btn stop-btn';
+                recordingIndicator.classList.remove('hidden');
+                
+                // 分析中表示
+                analyzingDisplay.classList.remove('hidden');
+                analysisResult.classList.add('hidden');
+                
+                // 定期的に分析結果を更新
+                analysisInterval = setInterval(() => {
+                    analysisCount++;
+                    
+                    if (analysisCount >= 3) {
+                        // 分析結果表示
+                        showAnalysisResult();
+                        analyzingDisplay.classList.add('hidden');
+                    }
+                    
+                    if (analysisCount >= 8) {
+                        // 自動停止
+                        stopAnalysis();
+                    }
+                }, 2000);
+                
+            } else {
+                // 分析停止
+                stopAnalysis();
+            }
+        }
+
+        function stopAnalysis() {
+            isAnalyzing = false;
+            clearInterval(analysisInterval);
+            
+            const toggleBtn = document.getElementById('toggle-btn');
+            const recordingIndicator = document.getElementById('recording-indicator');
+            const analyzingDisplay = document.getElementById('analyzing-display');
+            const sessionSummary = document.getElementById('session-summary');
+            
+            toggleBtn.textContent = '分析開始';
+            toggleBtn.className = 'control-btn start-btn';
+            recordingIndicator.classList.add('hidden');
+            analyzingDisplay.classList.add('hidden');
+            
+            // セッションサマリー表示
+            sessionSummary.classList.remove('hidden');
+        }
+
+        function showAnalysisResult() {
+            const analysisResult = document.getElementById('analysis-result');
+            const analysisTime = document.getElementById('analysis-time');
+            
+            // 現在時刻を設定
+            const now = new Date();
+            analysisTime.textContent = now.toLocaleTimeString('ja-JP');
+            
+            // ランダムな分析結果を生成
+            const scenarios = [
+                {
+                    score: 85,
+                    kneeScore: 15,
+                    feedback: 'good',
+                    feedbackText: '良好',
+                    message: '素晴らしいフォームです！この調子で続けましょう。',
+                    leftKnee: 'good',
+                    rightKnee: 'good',
+                    ratio: 0.94
+                },
+                {
+                    score: 65,
+                    kneeScore: 35,
+                    feedback: 'moderate',
+                    feedbackText: '注意',
+                    message: '概ね良好ですが、改善の余地があります。',
+                    leftKnee: 'moderate',
+                    rightKnee: 'good',
+                    ratio: 0.78
+                },
+                {
+                    score: 40,
+                    kneeScore: 60,
+                    feedback: 'poor',
+                    feedbackText: '要改善',
+                    message: 'フォームに問題があります。安全のため注意してください。',
+                    leftKnee: 'poor',
+                    rightKnee: 'moderate',
+                    ratio: 0.58
+                }
+            ];
+            
+            const scenario = scenarios[Math.floor(Math.random() * scenarios.length)];
+            
+            // UI更新
+            document.getElementById('overall-score').textContent = scenario.score;
+            document.getElementById('overall-score').style.color = getScoreColor(scenario.score);
+            document.getElementById('knee-score').textContent = scenario.kneeScore + '%';
+            document.getElementById('feedback-chip').textContent = scenario.feedbackText;
+            document.getElementById('feedback-chip').className = `feedback-chip feedback-${scenario.feedback}`;
+            document.getElementById('score-progress-fill').style.width = scenario.score + '%';
+            document.getElementById('score-progress-fill').style.background = getScoreColor(scenario.score);
+            
+            // 膝の位置関係
+            const leftKneeChip = document.querySelector('.alignment-grid .alignment-item:first-child .alignment-chip');
+            const rightKneeChip = document.querySelector('.alignment-grid .alignment-item:last-child .alignment-chip');
+            
+            leftKneeChip.textContent = getAlignmentText(scenario.leftKnee);
+            leftKneeChip.className = `alignment-chip feedback-${scenario.leftKnee}`;
+            rightKneeChip.textContent = getAlignmentText(scenario.rightKnee);
+            rightKneeChip.className = `alignment-chip feedback-${scenario.rightKnee}`;
+            
+            document.querySelector('.ratio-label').textContent = `膝幅/足首幅比率: ${scenario.ratio}`;
+            document.querySelector('.feedback-message').textContent = scenario.message;
+            
+            analysisResult.classList.remove('hidden');
+        }
+
+        function getScoreColor(score) {
+            if (score >= 80) return '#4CAF50';
+            if (score >= 60) return '#FF9800';
+            return '#F44336';
+        }
+
+        function getAlignmentText(alignment) {
+            switch (alignment) {
+                case 'good': return '良好';
+                case 'moderate': return '注意';
+                case 'poor': return '要改善';
+                default: return '不明';
+            }
+        }
+
+        function retryAnalysis() {
+            const sessionSummary = document.getElementById('session-summary');
+            const analysisResult = document.getElementById('analysis-result');
+            
+            sessionSummary.classList.add('hidden');
+            analysisResult.classList.add('hidden');
+            analysisCount = 0;
+        }
+
+        function completeAnalysis() {
+            alert('AI分析が完了しました！\n\n分析結果がセッション履歴に保存されました。');
+        }
+    </script>
+</body>
+</html>

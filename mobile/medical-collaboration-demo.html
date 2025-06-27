@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>医療従事者連携画面 - デモ</title>
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif; 
+            margin: 0; 
+            padding: 20px; 
+            background: #f5f5f5; 
+        }
+        .phone-frame { 
+            max-width: 375px; 
+            margin: 0 auto; 
+            background: #000; 
+            border-radius: 20px; 
+            padding: 8px; 
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3); 
+        }
+        .screen { 
+            background: white; 
+            border-radius: 16px; 
+            overflow: hidden; 
+            min-height: 600px; 
+            position: relative; 
+            display: flex;
+            flex-direction: column;
+        }
+        .header { 
+            background: #2196F3; 
+            color: white; 
+            padding: 20px; 
+            text-align: center; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+        }
+        .tab-navigation {
+            background: white;
+            padding: 8px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-around;
+        }
+        .tab-button {
+            padding: 8px 12px;
+            border-radius: 16px;
+            border: 1px solid #2196F3;
+            background: white;
+            color: #2196F3;
+            cursor: pointer;
+            font-size: 12px;
+            position: relative;
+            min-width: 60px;
+            text-align: center;
+        }
+        .tab-button.active {
+            background: #2196F3;
+            color: white;
+        }
+        .tab-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #F44336;
+            color: white;
+            border-radius: 10px;
+            min-width: 16px;
+            height: 16px;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .content { 
+            flex: 1;
+            padding: 16px; 
+            background: #f5f5f5;
+            overflow-y: auto;
+        }
+        .card { 
+            background: white; 
+            border-radius: 12px; 
+            padding: 16px; 
+            margin: 12px 0; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1); 
+        }
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 16px;
+        }
+        .staff-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 24px;
+            background: #2196F3;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            position: relative;
+            margin-right: 12px;
+        }
+        .online-indicator {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 12px;
+            height: 12px;
+            background: #4CAF50;
+            border: 2px solid white;
+            border-radius: 6px;
+        }
+        .staff-info {
+            flex: 1;
+        }
+        .staff-name {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 2px;
+        }
+        .staff-title {
+            font-size: 12px;
+            color: #666;
+        }
+        .staff-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .unread-badge {
+            background: #F44336;
+            color: white;
+            border-radius: 10px;
+            min-width: 20px;
+            height: 20px;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .message-btn {
+            background: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 16px;
+            padding: 6px 12px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        .message-item {
+            padding: 12px;
+            margin-bottom: 8px;
+            background: #f9f9f9;
+            border-radius: 8px;
+        }
+        .message-item.unread {
+            background: #e3f2fd;
+            border-left: 4px solid #2196F3;
+        }
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 4px;
+        }
+        .message-sender {
+            font-size: 14px;
+            font-weight: bold;
+            color: #333;
+        }
+        .message-time {
+            font-size: 12px;
+            color: #666;
+        }
+        .message-content {
+            font-size: 14px;
+            color: #333;
+            line-height: 1.4;
+        }
+        .compose-section {
+            margin-top: 16px;
+        }
+        .compose-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+        .message-input {
+            width: 100%;
+            min-height: 80px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 14px;
+            resize: vertical;
+            margin-bottom: 12px;
+        }
+        .send-btn {
+            background: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            float: right;
+        }
+        .send-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .share-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .share-btn {
+            flex: 1;
+            min-width: 45%;
+            padding: 12px;
+            border: 1px solid #2196F3;
+            border-radius: 8px;
+            background: white;
+            color: #2196F3;
+            cursor: pointer;
+            font-size: 12px;
+            text-align: center;
+        }
+        .share-btn:hover {
+            background: #f0f8ff;
+        }
+        .report-item {
+            padding: 12px;
+            margin-bottom: 12px;
+            background: #f9f9f9;
+            border-radius: 8px;
+        }
+        .report-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 4px;
+        }
+        .report-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: #333;
+        }
+        .report-date {
+            font-size: 12px;
+            color: #666;
+        }
+        .report-recipients {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+        .status-chip {
+            padding: 4px 8px;
+            border: 1px solid #4CAF50;
+            border-radius: 12px;
+            font-size: 10px;
+            color: #4CAF50;
+            display: inline-block;
+        }
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .setting-label {
+            font-size: 14px;
+            color: #333;
+        }
+        .toggle {
+            position: relative;
+            width: 48px;
+            height: 24px;
+            border-radius: 12px;
+            background: #ddd;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .toggle.active {
+            background: #2196F3;
+        }
+        .toggle-knob {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            border-radius: 10px;
+            background: white;
+            transition: transform 0.3s;
+        }
+        .toggle.active .toggle-knob {
+            transform: translateX(24px);
+        }
+        .appointment-card {
+            background: #e8f5e8;
+            margin-bottom: 16px;
+        }
+        .appointment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .appointment-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+            flex: 1;
+        }
+        .appointment-details {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .appointment-detail {
+            font-size: 14px;
+            color: #333;
+        }
+        .appointment-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px;
+        }
+        .appointment-btn {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #2196F3;
+            border-radius: 8px;
+            background: white;
+            color: #2196F3;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1 style="text-align: center; margin-bottom: 20px;">医療従事者連携画面 - デモ</h1>
+    
+    <div class="phone-frame">
+        <div class="screen">
+            <div class="header">
+                <h2>医療従事者連携</h2>
+            </div>
+            
+            <!-- タブナビゲーション -->
+            <div class="tab-navigation">
+                <button class="tab-button active" onclick="showTab('messages')">
+                    メッセージ
+                    <span class="tab-badge">1</span>
+                </button>
+                <button class="tab-button" onclick="showTab('reports')">レポート</button>
+                <button class="tab-button" onclick="showTab('appointments')">予約</button>
+                <button class="tab-button" onclick="showTab('settings')">設定</button>
+            </div>
+            
+            <div class="content">
+                <!-- メッセージタブ -->
+                <div id="messages-tab">
+                    <!-- 医療従事者リスト -->
+                    <div class="card">
+                        <div class="section-title">医療従事者</div>
+                        
+                        <div class="staff-item">
+                            <div class="avatar">
+                                田
+                                <div class="online-indicator"></div>
+                            </div>
+                            <div class="staff-info">
+                                <div class="staff-name">田中 一郎</div>
+                                <div class="staff-title">整形外科医 - スポーツ整形外科</div>
+                            </div>
+                            <div class="staff-actions">
+                                <button class="message-btn" onclick="selectStaff('田中 一郎', '整形外科医')">メッセージ</button>
+                            </div>
+                        </div>
+                        
+                        <div class="staff-item">
+                            <div class="avatar">佐</div>
+                            <div class="staff-info">
+                                <div class="staff-name">佐藤 花子</div>
+                                <div class="staff-title">理学療法士 - スポーツリハビリテーション</div>
+                            </div>
+                            <div class="staff-actions">
+                                <div class="unread-badge">1</div>
+                                <button class="message-btn" onclick="selectStaff('佐藤 花子', '理学療法士')">メッセージ</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- メッセージ履歴 -->
+                    <div class="card">
+                        <div class="section-title">メッセージ</div>
+                        
+                        <div class="message-item unread">
+                            <div class="message-header">
+                                <span class="message-sender">佐藤 花子 (理学療法士)</span>
+                                <span class="message-time">2時間前</span>
+                            </div>
+                            <div class="message-content">
+                                お疲れ様です。今日のトレーニングはいかがでしたか？痛みの状況について教えてください。
+                            </div>
+                        </div>
+                        
+                        <div class="message-item">
+                            <div class="message-header">
+                                <span class="message-sender">自分</span>
+                                <span class="message-time">90分前</span>
+                            </div>
+                            <div class="message-content">
+                                お疲れ様です。今日は調子が良く、痛みも2/10程度でした。ミニスクワットも10回×3セット完了できました。
+                            </div>
+                        </div>
+                        
+                        <div class="message-item">
+                            <div class="message-header">
+                                <span class="message-sender">田中 一郎 (整形外科医)</span>
+                                <span class="message-time">昨日</span>
+                            </div>
+                            <div class="message-content">
+                                経過良好ですね。来週の診察で次のフェーズについて相談しましょう。ACL-RSIの結果も拝見しました。
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- メッセージ送信 -->
+                    <div class="card">
+                        <div class="compose-section">
+                            <div id="compose-title" class="compose-title">メッセージ送信</div>
+                            <textarea id="message-input" class="message-input" placeholder="メッセージを入力してください"></textarea>
+                            <button id="send-btn" class="send-btn" onclick="sendMessage()" disabled>送信</button>
+                            <div style="clear: both;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- レポートタブ -->
+                <div id="reports-tab" class="hidden">
+                    <!-- データ共有 -->
+                    <div class="card">
+                        <div class="section-title">データ共有</div>
+                        
+                        <div class="share-buttons">
+                            <button class="share-btn" onclick="shareReport('進捗レポート')">
+                                📊 進捗レポート
+                            </button>
+                            <button class="share-btn" onclick="shareReport('ACL-RSI結果')">
+                                🧠 ACL-RSI結果
+                            </button>
+                            <button class="share-btn" onclick="shareReport('AI分析結果')">
+                                📹 AI分析結果
+                            </button>
+                            <button class="share-btn" onclick="shareReport('運動記録')">
+                                💪 運動記録
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 共有済みレポート -->
+                    <div class="card">
+                        <div class="section-title">共有済みレポート</div>
+                        
+                        <div class="report-item">
+                            <div class="report-header">
+                                <span class="report-title">週間進捗レポート</span>
+                                <span class="report-date">12/20</span>
+                            </div>
+                            <div class="report-recipients">送信先: 2名</div>
+                            <span class="status-chip">送信済み</span>
+                        </div>
+                        
+                        <div class="report-item">
+                            <div class="report-header">
+                                <span class="report-title">ACL-RSI評価結果</span>
+                                <span class="report-date">12/17</span>
+                            </div>
+                            <div class="report-recipients">送信先: 2名</div>
+                            <span class="status-chip">送信済み</span>
+                        </div>
+                    </div>
+
+                    <!-- 自動共有設定 -->
+                    <div class="card">
+                        <div class="section-title">自動共有設定</div>
+                        
+                        <div class="setting-item">
+                            <span class="setting-label">進捗データの自動共有</span>
+                            <div class="toggle active" onclick="toggleSetting(this)">
+                                <div class="toggle-knob"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-item">
+                            <span class="setting-label">ACL-RSI結果の自動共有</span>
+                            <div class="toggle active" onclick="toggleSetting(this)">
+                                <div class="toggle-knob"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-item">
+                            <span class="setting-label">週間レポートの自動送信</span>
+                            <div class="toggle active" onclick="toggleSetting(this)">
+                                <div class="toggle-knob"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 予約タブ -->
+                <div id="appointments-tab" class="hidden">
+                    <!-- 次回予約 -->
+                    <div class="card appointment-card">
+                        <div class="section-title">次回予約</div>
+                        
+                        <div class="appointment-header">
+                            <span class="appointment-title">経過観察・診察</span>
+                            <span class="status-chip">確定</span>
+                        </div>
+                        
+                        <div class="appointment-details">
+                            <div class="appointment-detail">📅 12月30日 14:00</div>
+                            <div class="appointment-detail">👨‍⚕️ 田中 一郎 (整形外科医)</div>
+                            <div class="appointment-detail">📍 東京スポーツ医療センター 3F 診察室A</div>
+                            <div class="appointment-detail">📝 次フェーズへの移行について相談</div>
+                        </div>
+                    </div>
+
+                    <!-- 予約一覧 -->
+                    <div class="card">
+                        <div class="section-title">予約一覧</div>
+                        
+                        <div class="report-item">
+                            <div class="report-header">
+                                <span class="report-title">経過観察・診察</span>
+                                <span class="report-date">12/30 14:00</span>
+                            </div>
+                            <div class="report-recipients">田中 一郎 (整形外科医)</div>
+                            <span class="status-chip">確定</span>
+                        </div>
+                        
+                        <div class="report-item">
+                            <div class="report-header">
+                                <span class="report-title">リハビリテーション</span>
+                                <span class="report-date">1/2 10:00</span>
+                            </div>
+                            <div class="report-recipients">佐藤 花子 (理学療法士)</div>
+                            <span class="status-chip">確定</span>
+                        </div>
+                    </div>
+
+                    <!-- 予約アクション -->
+                    <div class="appointment-actions">
+                        <button class="appointment-btn" onclick="alert('新しい予約機能は開発中です')">
+                            📅 新しい予約
+                        </button>
+                        <button class="appointment-btn" onclick="alert('予約変更機能は開発中です')">
+                            ✏️ 予約変更
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 設定タブ -->
+                <div id="settings-tab" class="hidden">
+                    <!-- 通知設定 -->
+                    <div class="card">
+                        <div class="section-title">通知設定</div>
+                        
+                        <div class="setting-item">
+                            <span class="setting-label">新しいメッセージの通知</span>
+                            <div class="toggle active" onclick="toggleSetting(this)">
+                                <div class="toggle-knob"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-item">
+                            <span class="setting-label">予約リマインダー</span>
+                            <div class="toggle active" onclick="toggleSetting(this)">
+                                <div class="toggle-knob"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-item">
+                            <span class="setting-label">緊急アラート</span>
+                            <div class="toggle active" onclick="toggleSetting(this)">
+                                <div class="toggle-knob"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 医療チーム情報 -->
+                    <div class="card">
+                        <div class="section-title">医療チーム情報</div>
+                        
+                        <div class="staff-item">
+                            <div class="avatar">田</div>
+                            <div class="staff-info">
+                                <div class="staff-name">田中 一郎</div>
+                                <div class="staff-title">整形外科医 - 東京スポーツ医療センター</div>
+                            </div>
+                            <div class="staff-actions">
+                                <button class="message-btn" onclick="alert('📞 03-1234-5678')">電話</button>
+                            </div>
+                        </div>
+                        
+                        <div class="staff-item">
+                            <div class="avatar">佐</div>
+                            <div class="staff-info">
+                                <div class="staff-name">佐藤 花子</div>
+                                <div class="staff-title">理学療法士 - 東京スポーツ医療センター</div>
+                            </div>
+                            <div class="staff-actions">
+                                <button class="message-btn" onclick="alert('📞 03-1234-5679')">電話</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedStaff = null;
+
+        function showTab(tabName) {
+            // タブボタンの状態更新
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // タブコンテンツの表示切替
+            document.querySelectorAll('[id$="-tab"]').forEach(tab => {
+                tab.classList.add('hidden');
+            });
+            document.getElementById(tabName + '-tab').classList.remove('hidden');
+        }
+
+        function selectStaff(name, title) {
+            selectedStaff = { name, title };
+            document.getElementById('compose-title').textContent = `${name}へメッセージ`;
+            updateSendButton();
+        }
+
+        function updateSendButton() {
+            const messageInput = document.getElementById('message-input');
+            const sendBtn = document.getElementById('send-btn');
+            const hasText = messageInput.value.trim().length > 0;
+            const hasRecipient = selectedStaff !== null;
+            
+            sendBtn.disabled = !(hasText && hasRecipient);
+        }
+
+        function sendMessage() {
+            const messageInput = document.getElementById('message-input');
+            const messageText = messageInput.value.trim();
+            
+            if (messageText && selectedStaff) {
+                // メッセージを履歴に追加（実際の実装では API呼び出し）
+                alert(`${selectedStaff.name}にメッセージを送信しました:\n\n"${messageText}"`);
+                messageInput.value = '';
+                updateSendButton();
+                
+                // 自動返信（デモ用）
+                setTimeout(() => {
+                    alert(`${selectedStaff.name}から返信: "メッセージを確認しました。ありがとうございます。"`);
+                }, 2000);
+            }
+        }
+
+        function shareReport(reportType) {
+            alert(`${reportType}を医療従事者に送信しました。`);
+        }
+
+        function toggleSetting(toggle) {
+            toggle.classList.toggle('active');
+        }
+
+        // メッセージ入力のイベントリスナー
+        document.getElementById('message-input').addEventListener('input', updateSendButton);
+
+        // 初期化
+        document.addEventListener('DOMContentLoaded', function() {
+            updateSendButton();
+        });
+    </script>
+</body>
+</html>

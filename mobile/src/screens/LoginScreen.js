@@ -16,7 +16,7 @@ import {
   ActivityIndicator,
 } from 'react-native-paper';
 import { useDispatch, useSelector } from 'react-redux';
-import { loginUser, checkAuthToken, clearError } from '../store/slices/authSlice';
+import { loginUser, checkAuthToken, clearError, demoLogin } from '../store/slices/authSlice';
 
 const LoginScreen = ({ navigation }) => {
   const [patientNumber, setPatientNumber] = useState('');
@@ -54,6 +54,10 @@ const LoginScreen = ({ navigation }) => {
     }
 
     dispatch(loginUser({ patientNumber: patientNumber.trim(), password }));
+  };
+
+  const handleDemoLogin = (phase) => {
+    dispatch(demoLogin({ phase }));
   };
 
   if (isLoading) {
@@ -122,6 +126,70 @@ const LoginScreen = ({ navigation }) => {
             </Text>
           </Card.Content>
         </Card>
+
+        {/* デモ用ボタン */}
+        <Card style={[styles.card, styles.demoCard]}>
+          <Card.Content>
+            <Title style={styles.demoTitle}>デモ版（開発用）</Title>
+            <Paragraph style={styles.demoSubtitle}>
+              各リハビリ段階をテストできます
+            </Paragraph>
+            
+            <View style={styles.demoButtonContainer}>
+              <Button
+                mode="outlined"
+                onPress={() => handleDemoLogin('pre_surgery')}
+                style={styles.demoButton}
+                compact
+              >
+                術前期
+              </Button>
+              <Button
+                mode="outlined"
+                onPress={() => handleDemoLogin('post_surgery_early')}
+                style={styles.demoButton}
+                compact
+              >
+                術直後期
+              </Button>
+              <Button
+                mode="outlined"
+                onPress={() => handleDemoLogin('phase_3_1')}
+                style={styles.demoButton}
+                compact
+              >
+                基礎回復期
+              </Button>
+            </View>
+            
+            <View style={styles.demoButtonContainer}>
+              <Button
+                mode="outlined"
+                onPress={() => handleDemoLogin('phase_3_2')}
+                style={styles.demoButton}
+                compact
+              >
+                筋力強化期
+              </Button>
+              <Button
+                mode="outlined"
+                onPress={() => handleDemoLogin('phase_3_3')}
+                style={styles.demoButton}
+                compact
+              >
+                機能訓練期
+              </Button>
+              <Button
+                mode="outlined"
+                onPress={() => handleDemoLogin('phase_3_4')}
+                style={styles.demoButton}
+                compact
+              >
+                競技復帰期
+              </Button>
+            </View>
+          </Card.Content>
+        </Card>
       </View>
     </KeyboardAvoidingView>
   );
@@ -175,6 +243,32 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#666',
     lineHeight: 18,
+  },
+  demoCard: {
+    marginTop: 16,
+    backgroundColor: '#FFF3E0',
+  },
+  demoTitle: {
+    textAlign: 'center',
+    marginBottom: 8,
+    fontSize: 18,
+    color: '#E65100',
+  },
+  demoSubtitle: {
+    textAlign: 'center',
+    marginBottom: 16,
+    color: '#BF360C',
+    fontSize: 12,
+  },
+  demoButtonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  demoButton: {
+    flex: 1,
+    marginHorizontal: 2,
+    borderColor: '#FF9800',
   },
 });
 

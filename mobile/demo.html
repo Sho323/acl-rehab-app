@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ACL リハビリアプリ - デモ画面</title>
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif; 
+            margin: 0; 
+            padding: 20px; 
+            background: #f5f5f5; 
+        }
+        .screen { 
+            max-width: 375px; 
+            margin: 0 auto 40px; 
+            background: white; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1); 
+            overflow: hidden;
+        }
+        .header { 
+            background: #2196F3; 
+            color: white; 
+            padding: 20px; 
+            text-align: center; 
+        }
+        .content { 
+            padding: 20px; 
+        }
+        .phase-chip { 
+            display: inline-block; 
+            padding: 8px 16px; 
+            border: 1px solid #4CAF50; 
+            border-radius: 20px; 
+            color: #4CAF50; 
+            font-size: 12px; 
+            margin-bottom: 16px; 
+        }
+        .exercise-card { 
+            border: 1px solid #e0e0e0; 
+            border-radius: 8px; 
+            padding: 16px; 
+            margin-bottom: 12px; 
+            background: white; 
+        }
+        .exercise-name { 
+            font-weight: bold; 
+            margin-bottom: 8px; 
+        }
+        .exercise-details { 
+            display: flex; 
+            justify-content: space-between; 
+            font-size: 14px; 
+            color: #666; 
+        }
+        .demo-buttons { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr 1fr; 
+            gap: 8px; 
+            margin: 16px 0; 
+        }
+        .demo-button { 
+            padding: 12px 8px; 
+            border: 1px solid #FF9800; 
+            border-radius: 6px; 
+            background: white; 
+            color: #FF9800; 
+            font-size: 12px; 
+            cursor: pointer; 
+            text-align: center; 
+        }
+        .demo-button:hover { 
+            background: #FFF3E0; 
+        }
+        .ai-badge { 
+            color: #2196F3; 
+            font-size: 12px; 
+        }
+    </style>
+</head>
+<body>
+    <h1 style="text-align: center; margin-bottom: 40px;">ACL リハビリアプリ - 段階別トレーニングメニュー</h1>
+    
+    <!-- ログイン画面 -->
+    <div class="screen">
+        <div class="header">
+            <h2>ACL リハビリアプリ</h2>
+            <p>前十字靭帯損傷患者用</p>
+        </div>
+        <div class="content">
+            <h3>デモ版（開発用）</h3>
+            <p>各リハビリ段階をテストできます</p>
+            <div class="demo-buttons">
+                <div class="demo-button" onclick="showPhase('pre_surgery')">術前期</div>
+                <div class="demo-button" onclick="showPhase('post_surgery_early')">術直後期</div>
+                <div class="demo-button" onclick="showPhase('phase_3_1')">基礎回復期</div>
+                <div class="demo-button" onclick="showPhase('phase_3_2')">筋力強化期</div>
+                <div class="demo-button" onclick="showPhase('phase_3_3')">機能訓練期</div>
+                <div class="demo-button" onclick="showPhase('phase_3_4')">競技復帰期</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 段階別メニュー画面 -->
+    <div id="menu-screen" class="screen" style="display: none;">
+        <div class="header">
+            <h2>今日のトレーニング</h2>
+        </div>
+        <div class="content">
+            <div id="phase-info">
+                <span id="phase-chip" class="phase-chip">術前期</span>
+                <p id="phase-description">手術前の準備期間</p>
+            </div>
+            
+            <h3 id="exercise-count">運動メニュー</h3>
+            <div id="exercises"></div>
+            
+            <button style="width: 100%; padding: 16px; background: #4CAF50; color: white; border: none; border-radius: 8px; font-size: 16px; margin-top: 16px;">
+                セッションを開始
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const phaseData = {
+            'pre_surgery': {
+                title: '術前期',
+                description: '手術前の準備期間',
+                color: '#FF9800',
+                exercises: [
+                    { name: '大腿四頭筋セッティング', category: '筋力維持', sets: 3, reps: 15, ai: false },
+                    { name: '立ち上がり練習', category: '基本動作訓練', sets: 3, reps: 10, ai: false }
+                ]
+            },
+            'post_surgery_early': {
+                title: '術直後期',
+                description: '手術直後〜2週間',
+                color: '#F44336',
+                exercises: [
+                    { name: 'ヒールスライド', category: '可動域改善', sets: 3, reps: 10, ai: false }
+                ]
+            },
+            'phase_3_1': {
+                title: '基礎回復期',
+                description: '2〜6週間',
+                color: '#2196F3',
+                exercises: [
+                    { name: '片脚立位', category: '歩行訓練', sets: 3, reps: 5, ai: true }
+                ]
+            },
+            'phase_3_2': {
+                title: '筋力強化期',
+                description: '6〜12週間',
+                color: '#4CAF50',
+                exercises: [
+                    { name: 'ミニスクワット', category: '筋力強化', sets: 3, reps: 10, ai: true },
+                    { name: 'バランスボード', category: 'バランス訓練', sets: 3, reps: 1, ai: true }
+                ]
+            },
+            'phase_3_3': {
+                title: '機能訓練期',
+                description: '3〜6ヶ月',
+                color: '#9C27B0',
+                exercises: [
+                    { name: 'ジャンプ着地', category: 'スポーツ動作訓練', sets: 3, reps: 10, ai: true }
+                ]
+            },
+            'phase_3_4': {
+                title: '競技復帰期',
+                description: '6〜12ヶ月',
+                color: '#E91E63',
+                exercises: [
+                    { name: 'カッティング動作', category: '競技特異的訓練', sets: 3, reps: 5, ai: true }
+                ]
+            }
+        };
+
+        function showPhase(phase) {
+            const data = phaseData[phase];
+            document.getElementById('phase-chip').textContent = data.title;
+            document.getElementById('phase-chip').style.borderColor = data.color;
+            document.getElementById('phase-chip').style.color = data.color;
+            document.getElementById('phase-description').textContent = data.description;
+            document.getElementById('exercise-count').textContent = `運動メニュー (${data.exercises.length}個)`;
+            
+            const exercisesDiv = document.getElementById('exercises');
+            exercisesDiv.innerHTML = '';
+            
+            data.exercises.forEach(exercise => {
+                const exerciseCard = document.createElement('div');
+                exerciseCard.className = 'exercise-card';
+                exerciseCard.innerHTML = `
+                    <div class="exercise-name">
+                        ${exercise.name}
+                        ${exercise.ai ? '<span class="ai-badge">📹 AI分析</span>' : ''}
+                    </div>
+                    <div style="font-size: 14px; color: #666; margin-bottom: 8px;">${exercise.category}</div>
+                    <div class="exercise-details">
+                        <span>${exercise.sets}セット</span>
+                        <span>${exercise.reps}回</span>
+                    </div>
+                `;
+                exercisesDiv.appendChild(exerciseCard);
+            });
+            
+            document.getElementById('menu-screen').style.display = 'block';
+            document.getElementById('menu-screen').scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>

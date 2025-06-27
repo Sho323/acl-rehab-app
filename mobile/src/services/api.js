@@ -59,26 +59,45 @@ export const authAPI = {
 
 // 運動API
 export const exerciseAPI = {
+  // 運動カテゴリー一覧取得
+  getCategories: async (phase, token) => {
+    const params = phase ? `?phase=${phase}` : '';
+    return await apiClient.get(`/api/exercises/categories${params}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+  },
+
+  // フェーズ別運動一覧取得
   getExercisesByPhase: async (phase, token) => {
-    return await apiClient.get(`/api/patient/exercises/${phase}`, {
+    return await apiClient.get(`/api/exercises/phase/${phase}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
   },
 
-  startSession: async (sessionData, token) => {
-    return await apiClient.post('/api/patient/sessions', sessionData, {
+  // カテゴリー別運動一覧取得
+  getExercisesByCategory: async (categoryId, token) => {
+    return await apiClient.get(`/api/exercises/category/${categoryId}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
   },
 
-  endSession: async (sessionId, sessionData, token) => {
-    return await apiClient.put(`/api/patient/sessions/${sessionId}`, sessionData, {
+  // 患者の運動プラン取得
+  getPatientExercisePlan: async (patientId, phase, token) => {
+    return await apiClient.get(`/api/exercises/patient/${patientId}/plan?phase=${phase}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
   },
 
-  recordExercise: async (exerciseData, token) => {
-    return await apiClient.post('/api/patient/exercises', exerciseData, {
+  // 運動詳細取得
+  getExerciseDetails: async (exerciseId, token) => {
+    return await apiClient.get(`/api/exercises/${exerciseId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+  },
+
+  // 運動セッション記録
+  recordSession: async (sessionData, token) => {
+    return await apiClient.post('/api/exercises/session', sessionData, {
       headers: { Authorization: `Bearer ${token}` },
     });
   },

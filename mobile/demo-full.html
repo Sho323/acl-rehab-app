@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ACL リハビリアプリ - フル機能デモ</title>
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif; 
+            margin: 0; 
+            padding: 20px; 
+            background: #f5f5f5; 
+        }
+        .phone-frame { 
+            max-width: 375px; 
+            margin: 0 auto; 
+            background: #000; 
+            border-radius: 20px; 
+            padding: 8px; 
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3); 
+        }
+        .screen { 
+            background: white; 
+            border-radius: 16px; 
+            overflow: hidden; 
+            min-height: 600px; 
+            position: relative; 
+        }
+        .header { 
+            background: #2196F3; 
+            color: white; 
+            padding: 20px; 
+            text-align: center; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+        }
+        .content { 
+            padding: 20px; 
+        }
+        .demo-buttons { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr 1fr; 
+            gap: 8px; 
+            margin: 16px 0; 
+        }
+        .demo-button { 
+            padding: 12px 8px; 
+            border: 1px solid #FF9800; 
+            border-radius: 6px; 
+            background: white; 
+            color: #FF9800; 
+            font-size: 11px; 
+            cursor: pointer; 
+            text-align: center; 
+            transition: all 0.2s; 
+        }
+        .demo-button:hover { 
+            background: #FFF3E0; 
+            transform: scale(1.02); 
+        }
+        .demo-card { 
+            background: #FFF3E0; 
+            border-radius: 12px; 
+            padding: 16px; 
+            margin: 16px 0; 
+        }
+        .home-card { 
+            background: white; 
+            border-radius: 12px; 
+            padding: 16px; 
+            margin: 12px 0; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1); 
+        }
+        .phase-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 16px; 
+        }
+        .phase-chip { 
+            padding: 6px 12px; 
+            border-radius: 16px; 
+            font-size: 12px; 
+            font-weight: bold; 
+        }
+        .progress-bar { 
+            width: 100%; 
+            height: 8px; 
+            background: #e0e0e0; 
+            border-radius: 4px; 
+            overflow: hidden; 
+            margin: 8px 0; 
+        }
+        .progress-fill { 
+            height: 100%; 
+            border-radius: 4px; 
+            transition: width 0.3s ease; 
+        }
+        .menu-card { 
+            background: white; 
+            border-radius: 12px; 
+            padding: 16px; 
+            margin: 12px 0; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1); 
+            cursor: pointer; 
+            transition: transform 0.2s; 
+        }
+        .menu-card:hover { 
+            transform: translateY(-2px); 
+        }
+        .menu-content { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 12px; 
+        }
+        .menu-icon { 
+            width: 40px; 
+            height: 40px; 
+            border-radius: 8px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 20px; 
+        }
+        .exercise-list { 
+            max-height: 400px; 
+            overflow-y: auto; 
+        }
+        .exercise-item { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 12px; 
+            border: 1px solid #e0e0e0; 
+            border-radius: 8px; 
+            margin: 8px 0; 
+            cursor: pointer; 
+            transition: all 0.2s; 
+        }
+        .exercise-item:hover { 
+            background: #f8f9fa; 
+            border-color: #2196F3; 
+        }
+        .exercise-info { 
+            flex: 1; 
+        }
+        .exercise-name { 
+            font-weight: bold; 
+            margin-bottom: 4px; 
+        }
+        .exercise-details { 
+            font-size: 12px; 
+            color: #666; 
+        }
+        .exercise-badges { 
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+        }
+        .difficulty-badge { 
+            padding: 4px 8px; 
+            border-radius: 12px; 
+            font-size: 10px; 
+            font-weight: bold; 
+        }
+        .ai-badge { 
+            background: #2196F3; 
+            color: white; 
+            padding: 4px 8px; 
+            border-radius: 12px; 
+            font-size: 10px; 
+        }
+        .btn-primary { 
+            width: 100%; 
+            padding: 16px; 
+            background: #4CAF50; 
+            color: white; 
+            border: none; 
+            border-radius: 8px; 
+            font-size: 16px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            margin-top: 16px; 
+            transition: background 0.2s; 
+        }
+        .btn-primary:hover { 
+            background: #45a049; 
+        }
+        .navigation { 
+            position: absolute; 
+            bottom: 0; 
+            left: 0; 
+            right: 0; 
+            background: white; 
+            border-top: 1px solid #e0e0e0; 
+            display: flex; 
+            height: 60px; 
+        }
+        .nav-item { 
+            flex: 1; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            cursor: pointer; 
+            font-size: 10px; 
+            color: #666; 
+        }
+        .nav-item.active { 
+            color: #2196F3; 
+        }
+        .nav-icon { 
+            font-size: 20px; 
+            margin-bottom: 4px; 
+        }
+        .screen-selector { 
+            text-align: center; 
+            margin-bottom: 20px; 
+        }
+        .screen-btn { 
+            padding: 8px 16px; 
+            margin: 0 4px; 
+            border: 1px solid #2196F3; 
+            border-radius: 20px; 
+            background: white; 
+            color: #2196F3; 
+            cursor: pointer; 
+            font-size: 12px; 
+        }
+        .screen-btn.active { 
+            background: #2196F3; 
+            color: white; 
+        }
+        .hidden { 
+            display: none; 
+        }
+    </style>
+</head>
+<body>
+    <h1 style="text-align: center; margin-bottom: 20px;">ACL リハビリアプリ - フル機能デモ</h1>
+    
+    <div class="screen-selector">
+        <button class="screen-btn active" onclick="showScreen('login')">ログイン画面</button>
+        <button class="screen-btn" onclick="showScreen('home')">ホーム画面</button>
+        <button class="screen-btn" onclick="showScreen('menu')">トレーニングメニュー</button>
+    </div>
+    
+    <div class="phone-frame">
+        <div class="screen">
+            <!-- ログイン画面 -->
+            <div id="login-screen" class="screen-content">
+                <div class="header">
+                    <h2>ACL リハビリアプリ</h2>
+                    <p>前十字靭帯損傷患者用</p>
+                </div>
+                <div class="content">
+                    <div style="margin-bottom: 20px;">
+                        <input type="text" placeholder="患者番号" style="width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; margin-bottom: 12px;">
+                        <input type="password" placeholder="パスワード" style="width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; margin-bottom: 12px;">
+                        <button class="btn-primary">ログイン</button>
+                    </div>
+                    
+                    <div class="demo-card">
+                        <h3 style="color: #E65100; margin-top: 0;">デモ版（開発用）</h3>
+                        <p style="color: #BF360C; font-size: 12px;">各リハビリ段階をテストできます</p>
+                        <div class="demo-buttons">
+                            <div class="demo-button" onclick="selectPhase('pre_surgery')">術前期</div>
+                            <div class="demo-button" onclick="selectPhase('post_surgery_early')">術直後期</div>
+                            <div class="demo-button" onclick="selectPhase('phase_3_1')">基礎回復期</div>
+                            <div class="demo-button" onclick="selectPhase('phase_3_2')">筋力強化期</div>
+                            <div class="demo-button" onclick="selectPhase('phase_3_3')">機能訓練期</div>
+                            <div class="demo-button" onclick="selectPhase('phase_3_4')">競技復帰期</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ホーム画面 -->
+            <div id="home-screen" class="screen-content hidden">
+                <div class="header">
+                    <h2>ACL リハビリ</h2>
+                </div>
+                <div class="content" style="padding-bottom: 80px;">
+                    <div class="home-card">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <p style="margin: 0; color: #666; font-size: 14px;">こんにちは</p>
+                                <h3 style="margin: 4px 0;">田中太郎さん</h3>
+                            </div>
+                            <button style="background: none; border: none; font-size: 20px;">⚙️</button>
+                        </div>
+                    </div>
+                    
+                    <div class="home-card">
+                        <div class="phase-header">
+                            <h3 style="margin: 0;">現在のリハビリ段階</h3>
+                            <span id="current-phase-chip" class="phase-chip" style="background: #FF9800; color: white;">術前期</span>
+                        </div>
+                        <p id="current-phase-desc" style="color: #666; margin-bottom: 16px;">手術前の準備期間</p>
+                        <div>
+                            <p style="font-size: 12px; color: #666; margin-bottom: 4px;">全体の進捗</p>
+                            <div class="progress-bar">
+                                <div id="progress-fill" class="progress-fill" style="width: 10%; background: #FF9800;"></div>
+                            </div>
+                            <p id="progress-text" style="font-size: 12px; color: #666; text-align: right; margin-top: 4px;">10%</p>
+                        </div>
+                    </div>
+                    
+                    <div class="menu-card" onclick="showScreen('menu')">
+                        <div class="menu-content">
+                            <div>
+                                <h3 style="margin: 0 0 4px 0;">自主トレーニング</h3>
+                                <p style="margin: 0; font-size: 12px; color: #666;">今日の運動メニュー</p>
+                            </div>
+                            <div class="menu-icon" style="background: #2E7D3215; color: #2E7D32;">🏋️</div>
+                        </div>
+                        <button class="btn-primary" style="background: #2E7D32;">開始</button>
+                    </div>
+                    
+                    <div class="menu-card">
+                        <div class="menu-content">
+                            <div>
+                                <h3 style="margin: 0 0 4px 0;">進捗確認</h3>
+                                <p style="margin: 0; font-size: 12px; color: #666;">回復状況の確認</p>
+                            </div>
+                            <div class="menu-icon" style="background: #1976D215; color: #1976D2;">📊</div>
+                        </div>
+                        <button class="btn-primary" style="background: #1976D2;">開始</button>
+                    </div>
+                </div>
+                
+                <div class="navigation">
+                    <div class="nav-item active">
+                        <div class="nav-icon">🏠</div>
+                        <div>ホーム</div>
+                    </div>
+                    <div class="nav-item">
+                        <div class="nav-icon">🏋️</div>
+                        <div>運動</div>
+                    </div>
+                    <div class="nav-item">
+                        <div class="nav-icon">📊</div>
+                        <div>進捗</div>
+                    </div>
+                    <div class="nav-item">
+                        <div class="nav-icon">👤</div>
+                        <div>プロフィール</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- トレーニングメニュー画面 -->
+            <div id="menu-screen" class="screen-content hidden">
+                <div class="header">
+                    <h2>今日のトレーニング</h2>
+                </div>
+                <div class="content" style="padding-bottom: 80px;">
+                    <div class="home-card">
+                        <div class="phase-header">
+                            <h3 style="margin: 0;">現在のリハビリ段階</h3>
+                            <span id="menu-phase-chip" class="phase-chip" style="background: #FF9800; color: white;">術前期</span>
+                        </div>
+                        <p id="menu-phase-desc" style="color: #666;">手術前の準備期間</p>
+                    </div>
+                    
+                    <div class="home-card">
+                        <h3 style="margin: 0 0 8px 0;">今日のトレーニング</h3>
+                        <p id="exercise-count" style="color: #666; margin-bottom: 16px;">2個の運動メニューが利用可能です</p>
+                        <button class="btn-primary" onclick="startSession()">セッションを開始</button>
+                    </div>
+                    
+                    <div class="exercise-list" id="exercise-list">
+                        <!-- 運動リストがここに表示される -->
+                    </div>
+                </div>
+                
+                <div class="navigation">
+                    <div class="nav-item">
+                        <div class="nav-icon">🏠</div>
+                        <div>ホーム</div>
+                    </div>
+                    <div class="nav-item active">
+                        <div class="nav-icon">🏋️</div>
+                        <div>運動</div>
+                    </div>
+                    <div class="nav-item">
+                        <div class="nav-icon">📊</div>
+                        <div>進捗</div>
+                    </div>
+                    <div class="nav-item">
+                        <div class="nav-icon">👤</div>
+                        <div>プロフィール</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentPhase = 'pre_surgery';
+        
+        const phaseData = {
+            'pre_surgery': {
+                title: '術前期',
+                description: '手術前の準備期間',
+                color: '#FF9800',
+                progress: 10,
+                exercises: [
+                    { name: '大腿四頭筋セッティング', category: '筋力維持', sets: 3, reps: 15, difficulty: 'beginner', ai: false },
+                    { name: '立ち上がり練習', category: '基本動作訓練', sets: 3, reps: 10, difficulty: 'beginner', ai: false }
+                ]
+            },
+            'post_surgery_early': {
+                title: '術直後期',
+                description: '手術直後〜2週間',
+                color: '#F44336',
+                progress: 20,
+                exercises: [
+                    { name: 'ヒールスライド', category: '可動域改善', sets: 3, reps: 10, difficulty: 'beginner', ai: false }
+                ]
+            },
+            'phase_3_1': {
+                title: '基礎回復期',
+                description: '2〜6週間',
+                color: '#2196F3',
+                progress: 40,
+                exercises: [
+                    { name: '片脚立位', category: '歩行訓練', sets: 3, reps: 5, difficulty: 'intermediate', ai: true }
+                ]
+            },
+            'phase_3_2': {
+                title: '筋力強化期',
+                description: '6〜12週間',
+                color: '#4CAF50',
+                progress: 60,
+                exercises: [
+                    { name: 'ミニスクワット', category: '筋力強化', sets: 3, reps: 10, difficulty: 'intermediate', ai: true },
+                    { name: 'バランスボード', category: 'バランス訓練', sets: 3, reps: 1, difficulty: 'intermediate', ai: true }
+                ]
+            },
+            'phase_3_3': {
+                title: '機能訓練期',
+                description: '3〜6ヶ月',
+                color: '#9C27B0',
+                progress: 80,
+                exercises: [
+                    { name: 'ジャンプ着地', category: 'スポーツ動作訓練', sets: 3, reps: 10, difficulty: 'advanced', ai: true }
+                ]
+            },
+            'phase_3_4': {
+                title: '競技復帰期',
+                description: '6〜12ヶ月',
+                color: '#E91E63',
+                progress: 95,
+                exercises: [
+                    { name: 'カッティング動作', category: '競技特異的訓練', sets: 3, reps: 5, difficulty: 'advanced', ai: true }
+                ]
+            }
+        };
+
+        function showScreen(screenName) {
+            // すべての画面を非表示
+            document.querySelectorAll('.screen-content').forEach(screen => {
+                screen.classList.add('hidden');
+            });
+            
+            // 選択された画面を表示
+            document.getElementById(screenName + '-screen').classList.remove('hidden');
+            
+            // ボタンのアクティブ状態を更新
+            document.querySelectorAll('.screen-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+
+        function selectPhase(phase) {
+            currentPhase = phase;
+            updatePhaseDisplay();
+            showScreen('home');
+        }
+
+        function updatePhaseDisplay() {
+            const data = phaseData[currentPhase];
+            
+            // ホーム画面の更新
+            document.getElementById('current-phase-chip').textContent = data.title;
+            document.getElementById('current-phase-chip').style.background = data.color;
+            document.getElementById('current-phase-desc').textContent = data.description;
+            document.getElementById('progress-fill').style.width = data.progress + '%';
+            document.getElementById('progress-fill').style.background = data.color;
+            document.getElementById('progress-text').textContent = data.progress + '%';
+            
+            // メニュー画面の更新
+            document.getElementById('menu-phase-chip').textContent = data.title;
+            document.getElementById('menu-phase-chip').style.background = data.color;
+            document.getElementById('menu-phase-desc').textContent = data.description;
+            document.getElementById('exercise-count').textContent = `${data.exercises.length}個の運動メニューが利用可能です`;
+            
+            // 運動リストの更新
+            updateExerciseList();
+        }
+
+        function updateExerciseList() {
+            const data = phaseData[currentPhase];
+            const exerciseList = document.getElementById('exercise-list');
+            exerciseList.innerHTML = '';
+            
+            // カテゴリーごとにグループ化
+            const groupedExercises = {};
+            data.exercises.forEach(exercise => {
+                if (!groupedExercises[exercise.category]) {
+                    groupedExercises[exercise.category] = [];
+                }
+                groupedExercises[exercise.category].push(exercise);
+            });
+            
+            Object.entries(groupedExercises).forEach(([category, exercises]) => {
+                const categoryDiv = document.createElement('div');
+                categoryDiv.className = 'home-card';
+                
+                const categoryHeader = document.createElement('h4');
+                categoryHeader.textContent = category;
+                categoryHeader.style.margin = '0 0 12px 0';
+                categoryDiv.appendChild(categoryHeader);
+                
+                exercises.forEach(exercise => {
+                    const exerciseItem = document.createElement('div');
+                    exerciseItem.className = 'exercise-item';
+                    exerciseItem.onclick = () => showExerciseDetail(exercise);
+                    
+                    const difficultyColors = {
+                        'beginner': '#4CAF50',
+                        'intermediate': '#FF9800',
+                        'advanced': '#F44336'
+                    };
+                    
+                    const difficultyLabels = {
+                        'beginner': '初級',
+                        'intermediate': '中級',
+                        'advanced': '上級'
+                    };
+                    
+                    exerciseItem.innerHTML = `
+                        <div class="exercise-info">
+                            <div class="exercise-name">${exercise.name}</div>
+                            <div class="exercise-details">${exercise.sets}セット × ${exercise.reps}回</div>
+                        </div>
+                        <div class="exercise-badges">
+                            <span class="difficulty-badge" style="background: ${difficultyColors[exercise.difficulty]}; color: white;">
+                                ${difficultyLabels[exercise.difficulty]}
+                            </span>
+                            ${exercise.ai ? '<span class="ai-badge">📹 AI分析</span>' : ''}
+                        </div>
+                    `;
+                    
+                    categoryDiv.appendChild(exerciseItem);
+                });
+                
+                exerciseList.appendChild(categoryDiv);
+            });
+        }
+
+        function showExerciseDetail(exercise) {
+            const difficultyLabels = {
+                'beginner': '初級',
+                'intermediate': '中級',
+                'advanced': '上級'
+            };
+            
+            alert(`${exercise.name}\n\n詳細: ${exercise.category}\nセット数: ${exercise.sets}\n回数: ${exercise.reps}\n難易度: ${difficultyLabels[exercise.difficulty]}${exercise.ai ? '\n📹 AI動作分析対象' : ''}\n\n（詳細画面は今後実装予定です）`);
+        }
+
+        function startSession() {
+            const data = phaseData[currentPhase];
+            alert(`セッション開始\n\n${data.exercises.length}個の運動メニューでトレーニングを開始します。\n\n（実際のセッション画面は今後実装予定です）`);
+        }
+
+        // 初期表示
+        updatePhaseDisplay();
+    </script>
+</body>
+</html>

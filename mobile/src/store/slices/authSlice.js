@@ -75,6 +75,21 @@ const authSlice = createSlice({
         state.user = { ...state.user, ...action.payload };
       }
     },
+    // デモ用のログイン（認証バイパス）
+    demoLogin: (state, action) => {
+      state.isAuthenticated = true;
+      state.user = {
+        id: 'demo-user-1',
+        name: '田中太郎',
+        patientNumber: 'DEMO001',
+        currentPhase: action.payload.phase || 'pre_surgery',
+        surgeryDate: '2024-01-15',
+        email: 'demo@example.com',
+      };
+      state.token = null; // デモモードではトークンなし
+      state.error = null;
+      state.isLoading = false;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -123,5 +138,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { clearError, updateUserProfile } = authSlice.actions;
+export const { clearError, updateUserProfile, demoLogin } = authSlice.actions;
 export default authSlice.reducer;

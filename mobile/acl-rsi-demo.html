@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ACL-RSI評価画面 - デモ</title>
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif; 
+            margin: 0; 
+            padding: 20px; 
+            background: #f5f5f5; 
+        }
+        .phone-frame { 
+            max-width: 375px; 
+            margin: 0 auto; 
+            background: #000; 
+            border-radius: 20px; 
+            padding: 8px; 
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3); 
+        }
+        .screen { 
+            background: white; 
+            border-radius: 16px; 
+            overflow: hidden; 
+            min-height: 600px; 
+            position: relative; 
+        }
+        .header { 
+            background: #2196F3; 
+            color: white; 
+            padding: 20px; 
+            text-align: center; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+        }
+        .content { 
+            padding: 20px; 
+            background: #f5f5f5;
+            min-height: calc(100vh - 160px);
+            overflow-y: auto;
+        }
+        .card { 
+            background: white; 
+            border-radius: 12px; 
+            padding: 16px; 
+            margin: 12px 0; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1); 
+        }
+        .intro-title {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 4px;
+        }
+        .intro-subtitle {
+            font-size: 16px;
+            color: #666;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .intro-description {
+            font-size: 14px;
+            color: #333;
+            line-height: 1.4;
+            margin-bottom: 20px;
+        }
+        .intro-features {
+            margin-bottom: 24px;
+        }
+        .intro-feature {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .feature-icon {
+            font-size: 20px;
+            margin-right: 12px;
+        }
+        .feature-text {
+            font-size: 14px;
+            color: #333;
+        }
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            margin-bottom: 12px;
+        }
+        .btn-primary {
+            background: #2196F3;
+            color: white;
+        }
+        .btn-outlined {
+            background: white;
+            color: #666;
+            border: 1px solid #666;
+        }
+        .progress-container {
+            margin-bottom: 16px;
+        }
+        .progress-text {
+            font-size: 14px;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 4px;
+        }
+        .progress-fill {
+            height: 100%;
+            background: #2196F3;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        .progress-percentage {
+            font-size: 12px;
+            color: #666;
+            text-align: right;
+        }
+        .question-nav {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding: 8px 0;
+        }
+        .question-nav-chip {
+            min-width: 32px;
+            height: 24px;
+            border-radius: 12px;
+            border: 1px solid #ddd;
+            background: #f5f5f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        .question-nav-chip.answered {
+            background: #e8f5e8;
+            border-color: #4CAF50;
+            color: #4CAF50;
+        }
+        .question-nav-chip.current {
+            background: #2196F3;
+            border-color: #2196F3;
+            color: white;
+        }
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .question-number {
+            font-size: 16px;
+            font-weight: bold;
+            color: #2196F3;
+        }
+        .category-chip {
+            padding: 4px 8px;
+            border: 1px solid #666;
+            border-radius: 12px;
+            font-size: 10px;
+            color: #666;
+        }
+        .question-text {
+            font-size: 16px;
+            line-height: 1.5;
+            margin-bottom: 24px;
+            color: #333;
+        }
+        .scale-container {
+            text-align: center;
+        }
+        .scale-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+        .scale-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin: 16px 0;
+            gap: 4px;
+        }
+        .scale-button {
+            flex: 1;
+            text-align: center;
+            cursor: pointer;
+        }
+        .scale-radio {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid #ddd;
+            margin: 0 auto 4px;
+            position: relative;
+        }
+        .scale-radio.selected {
+            border-color: #2196F3;
+        }
+        .scale-radio.selected::after {
+            content: '';
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #2196F3;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        .scale-value {
+            font-size: 12px;
+            color: #666;
+        }
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin: 16px 0;
+            gap: 8px;
+        }
+        .nav-btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .nav-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .results-container {
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .results-title {
+            font-size: 20px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .score-display {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .total-score-container {
+            display: flex;
+            align-items: baseline;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+        .total-score {
+            font-size: 48px;
+            font-weight: bold;
+        }
+        .score-unit {
+            font-size: 16px;
+            color: #666;
+            margin-left: 4px;
+        }
+        .category-scores {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+        }
+        .category-score {
+            text-align: center;
+        }
+        .category-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+        .category-value {
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .interpretation-chip {
+            padding: 8px 16px;
+            border: 2px solid;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            margin: 20px auto;
+            display: inline-block;
+        }
+        .interpretation-description {
+            font-size: 14px;
+            color: #333;
+            text-align: center;
+            line-height: 1.4;
+            margin-bottom: 20px;
+        }
+        .action-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+        .priority-badge {
+            background: #fff3cd;
+            padding: 8px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+        .priority-text {
+            font-size: 12px;
+            color: #856404;
+            font-weight: bold;
+        }
+        .action-item {
+            margin-bottom: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #eee;
+        }
+        .action-item-title {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+        .action-item-description {
+            font-size: 12px;
+            color: #666;
+            line-height: 1.4;
+            margin-bottom: 4px;
+        }
+        .action-item-timeline {
+            font-size: 10px;
+            color: #999;
+            font-style: italic;
+        }
+        .result-actions {
+            display: flex;
+            justify-content: space-around;
+            margin: 16px 0;
+            gap: 8px;
+        }
+        .latest-result {
+            background: #f9f9f9;
+        }
+        .latest-result-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+        .latest-result-content {
+            display: flex;
+            align-items: center;
+        }
+        .latest-score-container {
+            display: flex;
+            align-items: baseline;
+            margin-right: 20px;
+        }
+        .latest-score {
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .latest-score-unit {
+            font-size: 12px;
+            color: #666;
+            margin-left: 2px;
+        }
+        .latest-result-details {
+            flex: 1;
+        }
+        .latest-result-date {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 2px;
+        }
+        .latest-result-level {
+            font-size: 14px;
+            font-weight: bold;
+            color: #333;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1 style="text-align: center; margin-bottom: 20px;">ACL-RSI評価画面 - デモ</h1>
+    
+    <div class="phone-frame">
+        <div class="screen">
+            <div class="header">
+                <h2>ACL-RSI評価</h2>
+            </div>
+            
+            <div class="content">
+                <!-- 開始画面 -->
+                <div id="intro-screen">
+                    <div class="card">
+                        <div class="intro-title">ACL-RSI評価</div>
+                        <div class="intro-subtitle">心理的準備度テスト</div>
+                        
+                        <div class="intro-description">
+                            ACL-RSI（ACL Return to Sport after Injury）は、ACL損傷後のスポーツ復帰に向けた心理的準備度を評価する標準化された質問票です。
+                        </div>
+                        
+                        <div class="intro-features">
+                            <div class="intro-feature">
+                                <span class="feature-icon">📊</span>
+                                <span class="feature-text">12の質問で総合評価</span>
+                            </div>
+                            <div class="intro-feature">
+                                <span class="feature-icon">🎯</span>
+                                <span class="feature-text">感情面と自信面を個別分析</span>
+                            </div>
+                            <div class="intro-feature">
+                                <span class="feature-icon">💡</span>
+                                <span class="feature-text">個別化された改善提案</span>
+                            </div>
+                            <div class="intro-feature">
+                                <span class="feature-icon">📈</span>
+                                <span class="feature-text">経時的な変化を追跡</span>
+                            </div>
+                        </div>
+
+                        <button class="btn btn-primary" onclick="startAssessment()">
+                            評価を開始
+                        </button>
+
+                        <button class="btn btn-outlined" onclick="showHistory()">
+                            過去の評価を見る
+                        </button>
+                    </div>
+
+                    <!-- 最新結果 -->
+                    <div class="card latest-result">
+                        <div class="latest-result-title">最新の評価結果</div>
+                        <div class="latest-result-content">
+                            <div class="latest-score-container">
+                                <span class="latest-score" style="color: #2196F3;">72</span>
+                                <span class="latest-score-unit">点</span>
+                            </div>
+                            <div class="latest-result-details">
+                                <div class="latest-result-date">2024/12/20</div>
+                                <div class="latest-result-level">準備度が中程度</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 評価画面 -->
+                <div id="assessment-screen" class="hidden">
+                    <!-- ヘッダー -->
+                    <div class="card">
+                        <div style="font-size: 20px; font-weight: bold; text-align: center; margin-bottom: 8px;">
+                            ACL-RSI 心理的準備度評価
+                        </div>
+                        <div style="font-size: 14px; color: #666; text-align: center;">
+                            スポーツ復帰に向けた心理的準備度を評価します
+                        </div>
+                    </div>
+
+                    <!-- 進捗 -->
+                    <div class="card">
+                        <div class="progress-container">
+                            <div id="progress-text" class="progress-text">質問 1 / 12</div>
+                            <div class="progress-bar">
+                                <div id="progress-fill" class="progress-fill" style="width: 8%;"></div>
+                            </div>
+                            <div id="progress-percentage" class="progress-percentage">8%</div>
+                        </div>
+                        
+                        <div class="question-nav" id="question-nav">
+                            <!-- 質問ナビゲーションが動的に生成される -->
+                        </div>
+                    </div>
+
+                    <!-- 質問 -->
+                    <div class="card">
+                        <div class="question-header">
+                            <div id="question-number" class="question-number">質問 1</div>
+                            <div id="category-chip" class="category-chip">感情面</div>
+                        </div>
+                        
+                        <div id="question-text" class="question-text">
+                            スポーツに復帰することを考えると緊張しますか？
+                        </div>
+                        
+                        <div class="scale-container">
+                            <div class="scale-label">全く緊張しない</div>
+                            <div class="scale-buttons" id="scale-buttons">
+                                <!-- スケールボタンが動的に生成される -->
+                            </div>
+                            <div class="scale-label">非常に緊張する</div>
+                        </div>
+                    </div>
+
+                    <!-- ナビゲーション -->
+                    <div class="nav-buttons">
+                        <button id="prev-btn" class="nav-btn btn-outlined" onclick="previousQuestion()" disabled>
+                            前の質問
+                        </button>
+                        <button id="next-btn" class="nav-btn btn-primary" onclick="nextQuestion()" disabled>
+                            次の質問
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 結果画面 -->
+                <div id="results-screen" class="hidden">
+                    <div class="card">
+                        <div class="results-title">ACL-RSI評価結果</div>
+                        
+                        <div class="score-display">
+                            <div class="total-score-container">
+                                <span class="total-score" style="color: #2196F3;">72</span>
+                                <span class="score-unit">点</span>
+                            </div>
+                            
+                            <div class="category-scores">
+                                <div class="category-score">
+                                    <div class="category-label">感情面</div>
+                                    <div class="category-value" style="color: #FF9800;">68</div>
+                                </div>
+                                <div class="category-score">
+                                    <div class="category-label">自信面</div>
+                                    <div class="category-value" style="color: #2196F3;">75</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="interpretation-chip" style="border-color: #2196F3; color: #2196F3;">
+                            準備度が中程度
+                        </div>
+                        
+                        <div class="interpretation-description">
+                            基本的な心理的準備はできています
+                        </div>
+                    </div>
+
+                    <!-- 推奨アクション -->
+                    <div class="card">
+                        <div class="action-title">推奨アクション</div>
+                        <div class="priority-badge">
+                            <div class="priority-text">優先度: 中</div>
+                        </div>
+                        
+                        <div class="action-item">
+                            <div class="action-item-title">競技特異的トレーニング</div>
+                            <div class="action-item-description">実際の競技に近い環境での練習</div>
+                            <div class="action-item-timeline">実施目安: 2-4週間</div>
+                        </div>
+                        
+                        <div class="action-item">
+                            <div class="action-item-title">復帰計画の策定</div>
+                            <div class="action-item-description">詳細な段階的復帰スケジュールの作成</div>
+                            <div class="action-item-timeline">実施目安: 1-2週間</div>
+                        </div>
+                        
+                        <div class="action-item">
+                            <div class="action-item-title">仲間からのサポート</div>
+                            <div class="action-item-description">チームメイトや経験者との交流</div>
+                            <div class="action-item-timeline">実施目安: 継続的</div>
+                        </div>
+                    </div>
+
+                    <div class="result-actions">
+                        <button class="btn btn-outlined" onclick="showHistory()">
+                            履歴を見る
+                        </button>
+                        <button class="btn btn-primary" onclick="startAssessment()">
+                            新しい評価
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentQuestionIndex = 0;
+        let answers = {};
+        
+        const questions = [
+            {
+                id: 1,
+                category: 'emotion',
+                question: 'スポーツに復帰することを考えると緊張しますか？',
+                categoryText: '感情面'
+            },
+            {
+                id: 2,
+                category: 'confidence',
+                question: '怪我をした動きでも、以前と同じようにできる自信がありますか？',
+                categoryText: '自信面'
+            },
+            {
+                id: 3,
+                category: 'emotion',
+                question: 'スポーツに復帰することを考えると怖いですか？',
+                categoryText: '感情面'
+            },
+            {
+                id: 4,
+                category: 'confidence',
+                question: '怪我をする前と同じレベルでプレーできる自信がありますか？',
+                categoryText: '自信面'
+            },
+            {
+                id: 5,
+                category: 'confidence',
+                question: '膝の調子について心配していますか？',
+                categoryText: '自信面'
+            },
+            {
+                id: 6,
+                category: 'confidence',
+                question: '膝に負担のかかる動作ができる自信がありますか？',
+                categoryText: '自信面'
+            },
+            {
+                id: 7,
+                category: 'emotion',
+                question: '膝を再び怪我することを心配していますか？',
+                categoryText: '感情面'
+            },
+            {
+                id: 8,
+                category: 'confidence',
+                question: '思いっきりプレーができる自信がありますか？',
+                categoryText: '自信面'
+            },
+            {
+                id: 9,
+                category: 'confidence',
+                question: 'スポーツの技術的な部分で以前と同じようにできる自信がありますか？',
+                categoryText: '自信面'
+            },
+            {
+                id: 10,
+                category: 'emotion',
+                question: 'スポーツに復帰することを考えると不安になりますか？',
+                categoryText: '感情面'
+            },
+            {
+                id: 11,
+                category: 'confidence',
+                question: '競技中に膝について考えずにプレーできる自信がありますか？',
+                categoryText: '自信面'
+            },
+            {
+                id: 12,
+                category: 'confidence',
+                question: '以前と同じように競技に集中できる自信がありますか？',
+                categoryText: '自信面'
+            }
+        ];
+
+        function startAssessment() {
+            currentQuestionIndex = 0;
+            answers = {};
+            
+            document.getElementById('intro-screen').classList.add('hidden');
+            document.getElementById('results-screen').classList.add('hidden');
+            document.getElementById('assessment-screen').classList.remove('hidden');
+            
+            renderQuestion();
+            updateQuestionNavigation();
+        }
+
+        function renderQuestion() {
+            const question = questions[currentQuestionIndex];
+            const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
+            
+            // 進捗更新
+            document.getElementById('progress-text').textContent = `質問 ${currentQuestionIndex + 1} / ${questions.length}`;
+            document.getElementById('progress-fill').style.width = `${progress}%`;
+            document.getElementById('progress-percentage').textContent = `${Math.round(progress)}%`;
+            
+            // 質問更新
+            document.getElementById('question-number').textContent = `質問 ${question.id}`;
+            document.getElementById('category-chip').textContent = question.categoryText;
+            document.getElementById('question-text').textContent = question.question;
+            
+            // スケールボタン生成
+            const scaleContainer = document.getElementById('scale-buttons');
+            scaleContainer.innerHTML = '';
+            
+            for (let i = 0; i <= 10; i++) {
+                const button = document.createElement('div');
+                button.className = 'scale-button';
+                button.onclick = () => selectAnswer(i);
+                
+                const radio = document.createElement('div');
+                radio.className = 'scale-radio';
+                if (answers[question.id] === i) {
+                    radio.classList.add('selected');
+                }
+                
+                const value = document.createElement('div');
+                value.className = 'scale-value';
+                value.textContent = i;
+                
+                button.appendChild(radio);
+                button.appendChild(value);
+                scaleContainer.appendChild(button);
+            }
+            
+            // ボタン状態更新
+            document.getElementById('prev-btn').disabled = currentQuestionIndex === 0;
+            document.getElementById('next-btn').disabled = answers[question.id] === undefined;
+            document.getElementById('next-btn').textContent = currentQuestionIndex === questions.length - 1 ? '評価完了' : '次の質問';
+        }
+
+        function selectAnswer(value) {
+            const question = questions[currentQuestionIndex];
+            answers[question.id] = value;
+            
+            // スケールボタンの選択状態更新
+            document.querySelectorAll('.scale-radio').forEach((radio, index) => {
+                if (index === value) {
+                    radio.classList.add('selected');
+                } else {
+                    radio.classList.remove('selected');
+                }
+            });
+            
+            // 次へボタンを有効化
+            document.getElementById('next-btn').disabled = false;
+            
+            updateQuestionNavigation();
+        }
+
+        function nextQuestion() {
+            if (currentQuestionIndex < questions.length - 1) {
+                currentQuestionIndex++;
+                renderQuestion();
+                updateQuestionNavigation();
+            } else {
+                completeAssessment();
+            }
+        }
+
+        function previousQuestion() {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                renderQuestion();
+                updateQuestionNavigation();
+            }
+        }
+
+        function goToQuestion(index) {
+            currentQuestionIndex = index;
+            renderQuestion();
+            updateQuestionNavigation();
+        }
+
+        function updateQuestionNavigation() {
+            const navContainer = document.getElementById('question-nav');
+            navContainer.innerHTML = '';
+            
+            questions.forEach((question, index) => {
+                const chip = document.createElement('div');
+                chip.className = 'question-nav-chip';
+                chip.textContent = index + 1;
+                chip.onclick = () => goToQuestion(index);
+                
+                if (answers[question.id] !== undefined) {
+                    chip.classList.add('answered');
+                }
+                
+                if (index === currentQuestionIndex) {
+                    chip.classList.add('current');
+                }
+                
+                navContainer.appendChild(chip);
+            });
+        }
+
+        function completeAssessment() {
+            document.getElementById('assessment-screen').classList.add('hidden');
+            document.getElementById('results-screen').classList.remove('hidden');
+            
+            // 実際の実装では、ここでスコア計算を行う
+            console.log('Assessment completed with answers:', answers);
+        }
+
+        function showHistory() {
+            alert('履歴画面への遷移（実装予定）\n\n評価履歴:\n• 2024/12/20: 72点\n• 2024/12/13: 58点\n• 2024/11/27: 45点');
+        }
+
+        // 初期化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初期状態は開始画面
+        });
+    </script>
+</body>
+</html>

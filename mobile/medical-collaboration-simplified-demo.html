@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>医療従事者連携画面（簡略版） - デモ</title>
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif; 
+            margin: 0; 
+            padding: 20px; 
+            background: #f5f5f5; 
+        }
+        .phone-frame { 
+            max-width: 375px; 
+            margin: 0 auto; 
+            background: #000; 
+            border-radius: 20px; 
+            padding: 8px; 
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3); 
+        }
+        .screen { 
+            background: white; 
+            border-radius: 16px; 
+            overflow: hidden; 
+            min-height: 600px; 
+            position: relative; 
+            display: flex;
+            flex-direction: column;
+        }
+        .header { 
+            background: #2196F3; 
+            color: white; 
+            padding: 20px; 
+            text-align: center; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+        }
+        .tab-navigation {
+            background: white;
+            padding: 8px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-around;
+        }
+        .tab-button {
+            padding: 8px 16px;
+            border-radius: 16px;
+            border: 1px solid #2196F3;
+            background: white;
+            color: #2196F3;
+            cursor: pointer;
+            font-size: 12px;
+            text-align: center;
+            flex: 1;
+            margin: 0 4px;
+        }
+        .tab-button.active {
+            background: #2196F3;
+            color: white;
+        }
+        .content { 
+            flex: 1;
+            padding: 16px; 
+            background: #f5f5f5;
+            overflow-y: auto;
+        }
+        .card { 
+            background: white; 
+            border-radius: 12px; 
+            padding: 16px; 
+            margin: 12px 0; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1); 
+        }
+        .emergency-card {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+        }
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 16px;
+        }
+        .staff-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 24px;
+            background: #2196F3;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            position: relative;
+            margin-right: 12px;
+        }
+        .status-indicator {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 12px;
+            height: 12px;
+            border: 2px solid white;
+            border-radius: 6px;
+        }
+        .staff-info {
+            flex: 1;
+        }
+        .staff-name {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 2px;
+        }
+        .staff-title {
+            font-size: 12px;
+            color: #666;
+        }
+        .contact-info {
+            text-align: right;
+        }
+        .hospital-name {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 2px;
+        }
+        .contact-text {
+            font-size: 12px;
+            color: #2196F3;
+            font-weight: bold;
+        }
+        .emergency-contact {
+            text-align: center;
+            padding: 8px 0;
+        }
+        .emergency-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #856404;
+            margin-bottom: 4px;
+        }
+        .emergency-phone {
+            font-size: 18px;
+            font-weight: bold;
+            color: #d32f2f;
+            margin-bottom: 8px;
+        }
+        .emergency-note {
+            font-size: 12px;
+            color: #856404;
+            line-height: 1.4;
+        }
+        .team-description {
+            font-size: 14px;
+            color: #333;
+            line-height: 1.4;
+            margin-bottom: 16px;
+        }
+        .role-item {
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .role-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 4px;
+        }
+        .role-description {
+            font-size: 12px;
+            color: #666;
+            line-height: 1.4;
+        }
+        .share-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .share-btn {
+            flex: 1;
+            min-width: 45%;
+            padding: 12px;
+            border: 1px solid #2196F3;
+            border-radius: 8px;
+            background: white;
+            color: #2196F3;
+            cursor: pointer;
+            font-size: 12px;
+            text-align: center;
+        }
+        .share-btn:hover {
+            background: #f0f8ff;
+        }
+        .report-item {
+            padding: 12px;
+            margin-bottom: 12px;
+            background: #f9f9f9;
+            border-radius: 8px;
+        }
+        .report-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 4px;
+        }
+        .report-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: #333;
+        }
+        .report-date {
+            font-size: 12px;
+            color: #666;
+        }
+        .report-recipients {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+        .status-chip {
+            padding: 4px 8px;
+            border: 1px solid #4CAF50;
+            border-radius: 12px;
+            font-size: 10px;
+            color: #4CAF50;
+            display: inline-block;
+        }
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .setting-label {
+            font-size: 14px;
+            color: #333;
+        }
+        .toggle {
+            position: relative;
+            width: 48px;
+            height: 24px;
+            border-radius: 12px;
+            background: #ddd;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .toggle.active {
+            background: #2196F3;
+        }
+        .toggle-knob {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            border-radius: 10px;
+            background: white;
+            transition: transform 0.3s;
+        }
+        .toggle.active .toggle-knob {
+            transform: translateX(24px);
+        }
+        .setting-list-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+        }
+        .setting-icon {
+            margin-right: 12px;
+            font-size: 20px;
+            color: #666;
+        }
+        .setting-content {
+            flex: 1;
+        }
+        .setting-item-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 2px;
+        }
+        .setting-item-description {
+            font-size: 12px;
+            color: #666;
+        }
+        .chevron {
+            color: #ccc;
+            font-size: 14px;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1 style="text-align: center; margin-bottom: 20px;">医療従事者連携画面（簡略版） - デモ</h1>
+    
+    <div class="phone-frame">
+        <div class="screen">
+            <div class="header">
+                <h2>医療従事者連携</h2>
+            </div>
+            
+            <!-- タブナビゲーション -->
+            <div class="tab-navigation">
+                <button class="tab-button active" onclick="showTab('team')">医療チーム</button>
+                <button class="tab-button" onclick="showTab('reports')">レポート共有</button>
+                <button class="tab-button" onclick="showTab('settings')">設定</button>
+            </div>
+            
+            <div class="content">
+                <!-- 医療チームタブ -->
+                <div id="team-tab">
+                    <!-- 医療チーム -->
+                    <div class="card">
+                        <div class="section-title">医療チーム</div>
+                        
+                        <div class="staff-item">
+                            <div class="avatar">
+                                田
+                                <div class="status-indicator" style="background: #4CAF50;"></div>
+                            </div>
+                            <div class="staff-info">
+                                <div class="staff-name">田中 一郎</div>
+                                <div class="staff-title">整形外科医 - スポーツ整形外科</div>
+                            </div>
+                            <div class="contact-info">
+                                <div class="hospital-name">東京スポーツ医療センター</div>
+                                <div class="contact-text">03-1234-5678</div>
+                            </div>
+                        </div>
+                        
+                        <div class="staff-item">
+                            <div class="avatar">
+                                佐
+                                <div class="status-indicator" style="background: #2196F3;"></div>
+                            </div>
+                            <div class="staff-info">
+                                <div class="staff-name">佐藤 花子</div>
+                                <div class="staff-title">理学療法士 - スポーツリハビリテーション</div>
+                            </div>
+                            <div class="contact-info">
+                                <div class="hospital-name">東京スポーツ医療センター</div>
+                                <div class="contact-text">03-1234-5679</div>
+                            </div>
+                        </div>
+                        
+                        <div class="staff-item">
+                            <div class="avatar">
+                                山
+                                <div class="status-indicator" style="background: #FF9800;"></div>
+                            </div>
+                            <div class="staff-info">
+                                <div class="staff-name">山田 次郎</div>
+                                <div class="staff-title">看護師 - リハビリテーション看護</div>
+                            </div>
+                            <div class="contact-info">
+                                <div class="hospital-name">東京スポーツ医療センター</div>
+                                <div class="contact-text">yamada@sports-med.jp</div>
+                            </div>
+                        </div>
+                        
+                        <div class="staff-item">
+                            <div class="avatar">
+                                鈴
+                                <div class="status-indicator" style="background: #9C27B0;"></div>
+                            </div>
+                            <div class="staff-info">
+                                <div class="staff-name">鈴木 三郎</div>
+                                <div class="staff-title">スポーツ心理学者 - 復帰支援カウンセリング</div>
+                            </div>
+                            <div class="contact-info">
+                                <div class="hospital-name">東京スポーツ医療センター</div>
+                                <div class="contact-text">suzuki@sports-med.jp</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 緊急連絡先 -->
+                    <div class="card emergency-card">
+                        <div class="section-title">緊急連絡先</div>
+                        <div class="emergency-contact">
+                            <div class="emergency-title">24時間対応</div>
+                            <div class="emergency-phone">📞 03-1234-9999</div>
+                            <div class="emergency-note">
+                                痛みの悪化や異常を感じた場合は、すぐにご連絡ください。
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- チーム紹介 -->
+                    <div class="card">
+                        <div class="section-title">チーム紹介</div>
+                        <div class="team-description">
+                            あなたのACLリハビリテーションを、多職種の医療専門家チームがサポートします。
+                            各専門家が連携して、安全で効果的な復帰をお手伝いします。
+                        </div>
+                        
+                        <div class="role-item">
+                            <div class="role-title">🏥 整形外科医</div>
+                            <div class="role-description">
+                                診断・治療方針の決定、手術後の経過観察、復帰許可の判断
+                            </div>
+                        </div>
+                        
+                        <div class="role-item">
+                            <div class="role-title">🤸 理学療法士</div>
+                            <div class="role-description">
+                                リハビリテーション計画の作成、運動指導、機能評価
+                            </div>
+                        </div>
+                        
+                        <div class="role-item">
+                            <div class="role-title">👩‍⚕️ 看護師</div>
+                            <div class="role-description">
+                                日常的なケア、症状管理、患者教育とサポート
+                            </div>
+                        </div>
+                        
+                        <div class="role-item">
+                            <div class="role-title">🧠 心理専門家</div>
+                            <div class="role-description">
+                                心理的サポート、復帰不安の軽減、メンタルヘルスケア
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- レポート共有タブ -->
+                <div id="reports-tab" class="hidden">
+                    <!-- データ共有 -->
+                    <div class="card">
+                        <div class="section-title">データ共有</div>
+                        
+                        <div class="share-buttons">
+                            <button class="share-btn" onclick="shareReport('進捗レポート')">
+                                📊 進捗レポート
+                            </button>
+                            <button class="share-btn" onclick="shareReport('ACL-RSI結果')">
+                                🧠 ACL-RSI結果
+                            </button>
+                            <button class="share-btn" onclick="shareReport('AI分析結果')">
+                                📹 AI分析結果
+                            </button>
+                            <button class="share-btn" onclick="shareReport('運動記録')">
+                                💪 運動記録
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 共有済みレポート -->
+                    <div class="card">
+                        <div class="section-title">共有済みレポート</div>
+                        
+                        <div class="report-item">
+                            <div class="report-header">
+                                <span class="report-title">週間進捗レポート</span>
+                                <span class="report-date">12/20</span>
+                            </div>
+                            <div class="report-recipients">送信先: 2名（田中医師、佐藤理学療法士）</div>
+                            <span class="status-chip">送信済み</span>
+                        </div>
+                        
+                        <div class="report-item">
+                            <div class="report-header">
+                                <span class="report-title">ACL-RSI評価結果</span>
+                                <span class="report-date">12/17</span>
+                            </div>
+                            <div class="report-recipients">送信先: 2名（田中医師、鈴木心理士）</div>
+                            <span class="status-chip">送信済み</span>
+                        </div>
+                    </div>
+
+                    <!-- 自動共有設定 -->
+                    <div class="card">
+                        <div class="section-title">自動共有設定</div>
+                        
+                        <div class="setting-item">
+                            <span class="setting-label">進捗データの自動共有</span>
+                            <div class="toggle active" onclick="toggleSetting(this)">
+                                <div class="toggle-knob"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-item">
+                            <span class="setting-label">ACL-RSI結果の自動共有</span>
+                            <div class="toggle active" onclick="toggleSetting(this)">
+                                <div class="toggle-knob"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-item">
+                            <span class="setting-label">週間レポートの自動送信</span>
+                            <div class="toggle active" onclick="toggleSetting(this)">
+                                <div class="toggle-knob"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 設定タブ -->
+                <div id="settings-tab" class="hidden">
+                    <!-- 通知設定 -->}
+                    <div class="card">
+                        <div class="section-title">通知設定</div>
+                        
+                        <div class="setting-item">
+                            <span class="setting-label">レポート要請の通知</span>
+                            <div class="toggle active" onclick="toggleSetting(this)">
+                                <div class="toggle-knob"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-item">
+                            <span class="setting-label">緊急アラート</span>
+                            <div class="toggle active" onclick="toggleSetting(this)">
+                                <div class="toggle-knob"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-item">
+                            <span class="setting-label">週間ダイジェスト</span>
+                            <div class="toggle" onclick="toggleSetting(this)">
+                                <div class="toggle-knob"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- プライバシー設定 -->
+                    <div class="card">
+                        <div class="section-title">プライバシー設定</div>
+                        
+                        <div class="setting-item">
+                            <span class="setting-label">緊急連絡先機能</span>
+                            <div class="toggle active" onclick="toggleSetting(this)">
+                                <div class="toggle-knob"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-list-item" onclick="alert('データ使用ポリシーの詳細画面は開発中です')">
+                            <span class="setting-icon">🛡️</span>
+                            <div class="setting-content">
+                                <div class="setting-item-title">データ使用ポリシー</div>
+                                <div class="setting-item-description">医療データの使用に関するポリシーを確認</div>
+                            </div>
+                            <span class="chevron">›</span>
+                        </div>
+                    </div>
+
+                    <!-- データ共有履歴 -->
+                    <div class="card">
+                        <div class="section-title">データ共有履歴</div>
+                        
+                        <div class="setting-list-item" onclick="showTab('reports')">
+                            <span class="setting-icon">📋</span>
+                            <div class="setting-content">
+                                <div class="setting-item-title">共有済みレポートを確認</div>
+                                <div class="setting-item-description">これまでに送信したレポートの一覧</div>
+                            </div>
+                            <span class="chevron">›</span>
+                        </div>
+                        
+                        <div class="setting-list-item" onclick="alert('データエクスポート機能は開発中です')">
+                            <span class="setting-icon">📥</span>
+                            <div class="setting-content">
+                                <div class="setting-item-title">データエクスポート</div>
+                                <div class="setting-item-description">自分の医療データをエクスポート</div>
+                            </div>
+                            <span class="chevron">›</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showTab(tabName) {
+            // タブボタンの状態更新
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // タブコンテンツの表示切替
+            document.querySelectorAll('[id$="-tab"]').forEach(tab => {
+                tab.classList.add('hidden');
+            });
+            document.getElementById(tabName + '-tab').classList.remove('hidden');
+        }
+
+        function shareReport(reportType) {
+            alert(`${reportType}を医療従事者に送信しました。\n\n送信先:\n• 田中 一郎（整形外科医）\n• 佐藤 花子（理学療法士）`);
+        }
+
+        function toggleSetting(toggle) {
+            toggle.classList.toggle('active');
+        }
+    </script>
+</body>
+</html>

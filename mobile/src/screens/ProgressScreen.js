@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   View,
   StyleSheet,
@@ -10,27 +10,25 @@ import {
   ProgressBar,
   Chip,
   Divider,
+  ActivityIndicator,
 } from 'react-native-paper';
+import { useSelector, useDispatch } from 'react-redux';
+import { setDummyData } from '../store/slices/progressSlice';
 
 const ProgressScreen = () => {
-  // サンプル進捗データ
-  const progressData = {
-    weeklyGoal: {
-      completed: 4,
-      total: 6,
-    },
-    monthlyStats: {
-      sessionsCompleted: 18,
-      totalExercises: 156,
-      averagePainLevel: 2.3,
-      averageBorgScale: 12.5,
-    },
-    recentSessions: [
-      { date: '2024-12-25', exercises: 8, duration: 25, painLevel: 2 },
-      { date: '2024-12-23', exercises: 6, duration: 20, painLevel: 3 },
-      { date: '2024-12-21', exercises: 7, duration: 22, painLevel: 2 },
-    ],
-  };
+  const dispatch = useDispatch();
+  const {
+    weeklyGoal,
+    monthlyStats,
+    recentSessions,
+    isLoading,
+    error,
+  } = useSelector((state) => state.progress);
+
+  useEffect(() => {
+    // デモ用ダミーデータを設定
+    dispatch(setDummyData());
+  }, [dispatch]);
 
   const getPainLevelColor = (level) => {
     if (level <= 3) return '#4CAF50';
@@ -44,6 +42,15 @@ const ProgressScreen = () => {
     return '#F44336';
   };
 
+  if (isLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" />
+        <Text style={styles.loadingText}>進捗データを読み込み中...</Text>
+      </View>
+    );
+  }
+
   return (
     <ScrollView style={styles.container}>
       {/* 週間目標 */}
@@ -52,15 +59,15 @@ const ProgressScreen = () => {
           <Text style={styles.sectionTitle}>今週の目標</Text>
           <View style={styles.goalContent}>
             <Text style={styles.goalText}>
-              {progressData.weeklyGoal.completed} / {progressData.weeklyGoal.total} セッション完了
+              {weeklyGoal.completed} / {weeklyGoal.total} セッション完了
             </Text>
             <ProgressBar
-              progress={progressData.weeklyGoal.completed / progressData.weeklyGoal.total}
+              progress={weeklyGoal.completed / weeklyGoal.total}
               color="#2E7D32"
               style={styles.goalProgress}
             />
             <Text style={styles.goalPercentage}>
-              {Math.round((progressData.weeklyGoal.completed / progressData.weeklyGoal.total) * 100)}%
+              {Math.round((weeklyGoal.completed / weeklyGoal.total) * 100)}%
             </Text>
           </View>
         </Card.Content>
@@ -73,11 +80,11 @@ const ProgressScreen = () => {
           
           <View style={styles.statsGrid}>
             <View style={styles.statItem}>
-              <Text style={styles.statValue}>{progressData.monthlyStats.sessionsCompleted}</Text>
+              <Text style={styles.statValue}>{monthlyStats.sessionsCompleted}</Text>
               <Text style={styles.statLabel}>セッション数</Text>
             </View>
             <View style={styles.statItem}>
-              <Text style={styles.statValue}>{progressData.monthlyStats.totalExercises}</Text>
+              <Text style={styles.statValue}>{monthlyStats.totalExercises}</Text>
               <Text style={styles.statLabel}>総運動回数</Text>
             </View>
           </View>
@@ -88,8 +95,8 @@ const ProgressScreen = () => {
             <View style={styles.averageStat}>
               <Text style={styles.averageLabel}>平均痛みレベル</Text>
               <View style={styles.averageValue}>
-                <Text style={[styles.averageNumber, { color: getPainLevelColor(progressData.monthlyStats.averagePainLevel) }]}>
-                  {progressData.monthlyStats.averagePainLevel}
+                <Text style={[styles.averageNumber, { color: getPainLevelColor(monthlyStats.averagePainLevel) }]}>
+                  {monthlyStats.averagePainLevel}
                 </Text>
                 <Text style={styles.averageUnit}>/10</Text>
               </View>
@@ -98,8 +105,8 @@ const ProgressScreen = () => {
             <View style={styles.averageStat}>
               <Text style={styles.averageLabel}>平均疲労度</Text>
               <View style={styles.averageValue}>
-                <Text style={[styles.averageNumber, { color: getBorgScaleColor(progressData.monthlyStats.averageBorgScale) }]}>
-                  {progressData.monthlyStats.averageBorgScale}
+                <Text style={[styles.averageNumber, { color: getBorgScaleColor(monthlyStats.averageBorgScale) }]}>
+                  {monthlyStats.averageBorgScale}
                 </Text>
                 <Text style={styles.averageUnit}>/20</Text>
               </View>
@@ -113,7 +120,7 @@ const ProgressScreen = () => {
         <Card.Content>
           <Text style={styles.sectionTitle}>最近のセッション</Text>
           
-          {progressData.recentSessions.map((session, index) => (
+          {recentSessions.map((session, index) => (
             <View key={index} style={styles.sessionItem}>
               <View style={styles.sessionHeader}>
                 <Text style={styles.sessionDate}>
@@ -137,7 +144,7 @@ const ProgressScreen = () => {
                 </Text>
               </View>
               
-              {index < progressData.recentSessions.length - 1 && (
+              {index < recentSessions.length - 1 && (
                 <Divider style={styles.sessionDivider} />
               )}
             </View>
@@ -342,6 +349,17 @@ const styles = StyleSheet.create({
   legendText: {
     fontSize: 12,
     color: '#333',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f5f5f5',
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: '#666',
   },
 });
 

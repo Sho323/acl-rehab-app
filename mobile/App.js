@@ -10,6 +10,11 @@ import { theme } from './src/theme';
 import LoginScreen from './src/screens/LoginScreen';
 import HomeScreen from './src/screens/HomeScreen';
 import ExerciseScreen from './src/screens/ExerciseScreen';
+import ExerciseMenuScreen from './src/screens/ExerciseMenuScreen';
+import ExerciseSessionScreen from './src/screens/ExerciseSessionScreen';
+import AIAnalysisScreen from './src/screens/AIAnalysisScreen';
+import ACLRSIScreen from './src/screens/ACLRSIScreen';
+import MedicalCollaborationScreen from './src/screens/MedicalCollaborationScreen';
 import ProgressScreen from './src/screens/ProgressScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 
@@ -46,6 +51,31 @@ export default function App() {
               name="Exercise" 
               component={ExerciseScreen}
               options={{ title: '自主トレーニング' }}
+            />
+            <Stack.Screen 
+              name="ExerciseMenu" 
+              component={ExerciseMenuScreen}
+              options={{ title: '今日のトレーニング' }}
+            />
+            <Stack.Screen 
+              name="ExerciseSession" 
+              component={ExerciseSessionScreen}
+              options={{ title: 'トレーニング実行' }}
+            />
+            <Stack.Screen 
+              name="AIAnalysis" 
+              component={AIAnalysisScreen}
+              options={{ title: 'AI動作分析' }}
+            />
+            <Stack.Screen 
+              name="ACLRSI" 
+              component={ACLRSIScreen}
+              options={{ title: 'ACL-RSI評価' }}
+            />
+            <Stack.Screen 
+              name="MedicalCollaboration" 
+              component={MedicalCollaborationScreen}
+              options={{ title: '医療従事者連携' }}
             />
             <Stack.Screen 
               name="Progress" 
