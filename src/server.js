@@ -14,6 +14,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Routes
 const authRoutes = require('./routes/auth');
+const exerciseRoutes = require('./routes/exercises');
 
 app.get('/health', (req, res) => {
   res.status(200).json({
@@ -25,6 +26,7 @@ app.get('/health', (req, res) => {
 
 // API Routes
 app.use('/auth', authRoutes);
+app.use('/api/exercises', exerciseRoutes);
 
 // 404 handler
 app.use('*', (req, res) => {
