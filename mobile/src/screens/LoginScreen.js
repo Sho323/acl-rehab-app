@@ -6,6 +6,7 @@ import {
   Platform,
   Alert,
 } from 'react-native';
+import PropTypes from 'prop-types';
 import {
   Text,
   TextInput,
@@ -271,5 +272,12 @@ const styles = StyleSheet.create({
     borderColor: '#FF9800',
   },
 });
+
+LoginScreen.propTypes = {
+  navigation: PropTypes.shape({
+    navigate: PropTypes.func.isRequired,
+    replace: PropTypes.func.isRequired,
+  }).isRequired,
+};
 
 export default LoginScreen;

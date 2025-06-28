@@ -190,17 +190,36 @@
             data.exercises.forEach(exercise => {
                 const exerciseCard = document.createElement('div');
                 exerciseCard.className = 'exercise-card';
-                exerciseCard.innerHTML = `
-                    <div class="exercise-name">
-                        ${exercise.name}
-                        ${exercise.ai ? '<span class="ai-badge">📹 AI分析</span>' : ''}
-                    </div>
-                    <div style="font-size: 14px; color: #666; margin-bottom: 8px;">${exercise.category}</div>
-                    <div class="exercise-details">
-                        <span>${exercise.sets}セット</span>
-                        <span>${exercise.reps}回</span>
-                    </div>
-                `;
+                // XSS対策: textContentで安全にテキストを設定
+                const nameDiv = document.createElement('div');
+                nameDiv.className = 'exercise-name';
+                nameDiv.textContent = exercise.name;
+                if (exercise.ai) {
+                    const aiBadge = document.createElement('span');
+                    aiBadge.className = 'ai-badge';
+                    aiBadge.textContent = '📹 AI分析';
+                    nameDiv.appendChild(aiBadge);
+                }
+                
+                const categoryDiv = document.createElement('div');
+                categoryDiv.style.cssText = 'font-size: 14px; color: #666; margin-bottom: 8px;';
+                categoryDiv.textContent = exercise.category;
+                
+                const detailsDiv = document.createElement('div');
+                detailsDiv.className = 'exercise-details';
+                
+                const setsSpan = document.createElement('span');
+                setsSpan.textContent = `${exercise.sets}セット`;
+                
+                const repsSpan = document.createElement('span');
+                repsSpan.textContent = `${exercise.reps}回`;
+                
+                detailsDiv.appendChild(setsSpan);
+                detailsDiv.appendChild(repsSpan);
+                
+                exerciseCard.appendChild(nameDiv);
+                exerciseCard.appendChild(categoryDiv);
+                exerciseCard.appendChild(detailsDiv);
                 exercisesDiv.appendChild(exerciseCard);
             });
             

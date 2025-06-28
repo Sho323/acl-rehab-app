@@ -137,7 +137,7 @@ describe('Auth Routes', () => {
           password: 'password123',
           dateOfBirth: '1990-01-01',
           gender: 'male',
-          hospitalId: 'hospital-id'
+          hospitalId: 'valid-hospital-uuid-here'
         });
 
       expect(response.status).toBe(201);
@@ -166,7 +166,7 @@ describe('Auth Routes', () => {
           email: 'new@example.com',
           password: 'password123',
           dateOfBirth: '1990-01-01',
-          hospitalId: 'hospital-id'
+          hospitalId: 'f47ac10b-58cc-4372-a567-0e02b2c3d479'
         });
 
       expect(response.status).toBe(409);
@@ -191,7 +191,7 @@ describe('Auth Routes', () => {
           email: 'existing@example.com',
           password: 'password123',
           dateOfBirth: '1990-01-01',
-          hospitalId: 'hospital-id'
+          hospitalId: 'f47ac10b-58cc-4372-a567-0e02b2c3d479'
         });
 
       expect(response.status).toBe(409);

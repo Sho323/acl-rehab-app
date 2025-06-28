@@ -78,6 +78,9 @@ const exerciseSlice = createSlice({
     },
     updateExerciseProgress: (state, action) => {
       const { exerciseId, progress } = action.payload;
+      if (!state.exerciseProgress[exerciseId]) {
+        state.exerciseProgress[exerciseId] = {};
+      }
       state.exerciseProgress[exerciseId] = {
         ...state.exerciseProgress[exerciseId],
         ...progress,
@@ -117,16 +120,6 @@ const exerciseSlice = createSlice({
     // セッション実行関連のアクション
     setCurrentExercise: (state, action) => {
       state.currentExercise = action.payload;
-    },
-    updateExerciseProgress: (state, action) => {
-      const { exerciseId, progress } = action.payload;
-      if (!state.exerciseProgress[exerciseId]) {
-        state.exerciseProgress[exerciseId] = {};
-      }
-      state.exerciseProgress[exerciseId] = {
-        ...state.exerciseProgress[exerciseId],
-        ...progress,
-      };
     },
     completeExercise: (state, action) => {
       const { exerciseId, sessionData } = action.payload;

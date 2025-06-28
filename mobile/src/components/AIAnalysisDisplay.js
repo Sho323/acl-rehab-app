@@ -4,6 +4,7 @@ import {
   StyleSheet,
   Animated,
 } from 'react-native';
+import PropTypes from 'prop-types';
 import {
   Text,
   Card,
@@ -393,5 +394,29 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
 });
+
+AIAnalysisDisplay.propTypes = {
+  analysisData: PropTypes.shape({
+    overall_score: PropTypes.number,
+    knee_stability_score: PropTypes.number,
+    movement_quality_score: PropTypes.number,
+    symmetry_score: PropTypes.number,
+    balance_score: PropTypes.number,
+    issues: PropTypes.arrayOf(PropTypes.shape({
+      issue: PropTypes.string.isRequired,
+      severity: PropTypes.oneOf(['low', 'medium', 'high']).isRequired,
+      recommendation: PropTypes.string.isRequired,
+    })),
+    recommendations: PropTypes.arrayOf(PropTypes.string),
+  }),
+  isLoading: PropTypes.bool,
+  onRetry: PropTypes.func,
+};
+
+AIAnalysisDisplay.defaultProps = {
+  analysisData: null,
+  isLoading: false,
+  onRetry: null,
+};
 
 export default AIAnalysisDisplay;

@@ -2,6 +2,7 @@ const express = require('express');
 const Joi = require('joi');
 const { hashPassword, verifyPassword, generateToken, authenticateToken } = require('../utils/auth');
 const Patient = require('../models/Patient');
+const logger = require('../utils/logger');
 
 const router = express.Router();
 
@@ -79,7 +80,11 @@ router.post('/login', async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Login error:', error);
+    logger.error('Login error:', { 
+      error: error.message, 
+      patientNumber,
+      ip: req.ip 
+    });
     res.status(500).json({
       error: 'Internal server error'
     });
@@ -146,7 +151,11 @@ router.post('/register', async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Registration error:', error);
+    logger.error('Registration error:', { 
+      error: error.message, 
+      patientNumber,
+      ip: req.ip 
+    });
     res.status(500).json({
       error: 'Internal server error'
     });
@@ -171,7 +180,11 @@ router.get('/profile', authenticateToken, async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Profile error:', error);
+    logger.error('Profile error:', { 
+      error: error.message, 
+      userId: req.user?.id,
+      ip: req.ip 
+    });
     res.status(500).json({
       error: 'Internal server error'
     });

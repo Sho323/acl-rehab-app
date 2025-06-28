@@ -14,7 +14,7 @@ class AIAnalysisService {
     try {
       // 実際の環境では事前訓練されたモデルを読み込み
       // この例ではダミーのモデル構造を示す
-      console.log('AI分析モデルを初期化中...');
+      __DEV__ && console.log('AI分析モデルを初期化中...');
       
       // TensorFlow.js プラットフォーム設定
       await tf.ready();
@@ -23,11 +23,11 @@ class AIAnalysisService {
       this.model = await this.createDummyModel();
       
       this.isInitialized = true;
-      console.log('AI分析モデルの初期化が完了しました');
+      __DEV__ && console.log('AI分析モデルの初期化が完了しました');
       
       return true;
     } catch (error) {
-      console.error('AI分析モデルの初期化に失敗:', error);
+      __DEV__ && console.error('AI分析モデルの初期化に失敗:', error);
       return false;
     }
   }
@@ -86,7 +86,7 @@ class AIAnalysisService {
       
       return analysisResult;
     } catch (error) {
-      console.error('フレーム分析エラー:', error);
+      __DEV__ && console.error('フレーム分析エラー:', error);
       return this.getDummyAnalysisResult(exerciseType);
     }
   }

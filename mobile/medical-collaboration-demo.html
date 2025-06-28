@@ -655,7 +655,9 @@
 
         function selectStaff(name, title) {
             selectedStaff = { name, title };
-            document.getElementById('compose-title').textContent = `${name}へメッセージ`;
+            // XSS対策: textContentで安全にテキストを設定
+            const composeTitle = document.getElementById('compose-title');
+            composeTitle.textContent = name + 'へメッセージ';
             updateSendButton();
         }
 

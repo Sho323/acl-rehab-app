@@ -121,7 +121,7 @@ describe('Patient Model', () => {
       expect(db.where).toHaveBeenCalledWith({ id: 'test-id', is_active: true });
       expect(db.update).toHaveBeenCalledWith({
         ...updates,
-        updated_at: expect.any(Function)
+        updated_at: expect.any(Date)
       });
       expect(result.password_hash).toBeUndefined();
     });
@@ -142,7 +142,7 @@ describe('Patient Model', () => {
       expect(db).toHaveBeenCalledWith('patients');
       expect(db.where).toHaveBeenCalledWith({ id: 'test-id' });
       expect(db.update).toHaveBeenCalledWith({
-        last_login_at: expect.any(Function)
+        last_login_at: expect.any(Date)
       });
     });
   });
@@ -168,7 +168,7 @@ describe('Patient Model', () => {
         }
       ];
 
-      db.offset.mockResolvedValue(mockPatients);
+      db.limit.mockReturnValue({ offset: jest.fn().mockResolvedValue(mockPatients) });
 
       const result = await Patient.findByHospitalId('hospital-id', 50, 0);
 

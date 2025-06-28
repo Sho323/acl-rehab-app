@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Exercise = require('../models/Exercise');
 const { authenticateToken } = require('../utils/auth');
+const logger = require('../utils/logger');
 
 // 運動カテゴリー一覧の取得
 router.get('/categories', authenticateToken, async (req, res) => {
@@ -10,7 +11,7 @@ router.get('/categories', authenticateToken, async (req, res) => {
     const categories = await Exercise.getCategories(phase);
     res.json(categories);
   } catch (error) {
-    console.error('Error fetching exercise categories:', error);
+    logger.error('Error fetching exercise categories:', { error: error.message, phase, userId: req.user?.id });
     res.status(500).json({ error: 'Failed to fetch exercise categories' });
   }
 });
@@ -22,7 +23,7 @@ router.get('/phase/:phase', authenticateToken, async (req, res) => {
     const exercises = await Exercise.getExercisesByPhase(phase);
     res.json(exercises);
   } catch (error) {
-    console.error('Error fetching exercises by phase:', error);
+    logger.error('Error fetching exercises by phase:', { error: error.message, phase, userId: req.user?.id });
     res.status(500).json({ error: 'Failed to fetch exercises' });
   }
 });
@@ -34,7 +35,7 @@ router.get('/category/:categoryId', authenticateToken, async (req, res) => {
     const exercises = await Exercise.getExercisesByCategory(categoryId);
     res.json(exercises);
   } catch (error) {
-    console.error('Error fetching exercises by category:', error);
+    logger.error('Error fetching exercises by category:', error);
     res.status(500).json({ error: 'Failed to fetch exercises' });
   }
 });
@@ -52,7 +53,7 @@ router.get('/patient/:patientId/plan', authenticateToken, async (req, res) => {
     const exercisePlan = await Exercise.getPatientExercisePlan(patientId, phase);
     res.json(exercisePlan);
   } catch (error) {
-    console.error('Error fetching patient exercise plan:', error);
+    logger.error('Error fetching patient exercise plan:', error);
     res.status(500).json({ error: 'Failed to fetch exercise plan' });
   }
 });
@@ -69,7 +70,7 @@ router.get('/:exerciseId', authenticateToken, async (req, res) => {
     
     res.json(exercise);
   } catch (error) {
-    console.error('Error fetching exercise details:', error);
+    logger.error('Error fetching exercise details:', error);
     res.status(500).json({ error: 'Failed to fetch exercise details' });
   }
 });
@@ -88,7 +89,7 @@ router.post('/assign', authenticateToken, async (req, res) => {
     await Exercise.assignExerciseToPatient(patient_id, exercise_id, phase, sets, reps, duration || 0, notes);
     res.status(201).json({ message: 'Exercise assigned successfully' });
   } catch (error) {
-    console.error('Error assigning exercise:', error);
+    logger.error('Error assigning exercise:', error);
     if (error.code === '23505') { // Unique constraint violation
       res.status(409).json({ error: 'Exercise already assigned to patient for this phase' });
     } else {
@@ -114,7 +115,7 @@ router.post('/session', authenticateToken, async (req, res) => {
       session_id: sessionId 
     });
   } catch (error) {
-    console.error('Error recording exercise session:', error);
+    logger.error('Error recording exercise session:', error);
     res.status(500).json({ error: 'Failed to record exercise session' });
   }
 });

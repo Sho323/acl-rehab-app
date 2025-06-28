@@ -1,7 +1,11 @@
 import axios from 'axios';
+import Constants from 'expo-constants';
 
-// API基底URL（開発環境用）
-const API_BASE_URL = 'http://localhost:3000';
+// API基底URL（環境変数対応）
+const API_BASE_URL = Constants.expoConfig?.extra?.apiUrl || 
+  (process.env.NODE_ENV === 'production' 
+    ? 'https://your-production-api.com' 
+    : 'http://localhost:3000');
 
 // APIクライアントの設定
 const apiClient = axios.create({
@@ -29,7 +33,10 @@ apiClient.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       // 認証エラーの場合はログアウト処理
-      console.log('Authentication error - redirecting to login');
+      // Note: 本番環境では適切なログ管理システムを実装
+      if (__DEV__) {
+        console.log('Authentication error - redirecting to login');
+      }
     }
     return Promise.reject(error);
   }

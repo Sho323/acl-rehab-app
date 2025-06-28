@@ -13,19 +13,25 @@ import ExerciseScreen from './src/screens/ExerciseScreen';
 import ExerciseMenuScreen from './src/screens/ExerciseMenuScreen';
 import ExerciseSessionScreen from './src/screens/ExerciseSessionScreen';
 import AIAnalysisScreen from './src/screens/AIAnalysisScreen';
-import ACLRSIScreen from './src/screens/ACLRSIScreen';
 import MedicalCollaborationScreen from './src/screens/MedicalCollaborationScreen';
 import ProgressScreen from './src/screens/ProgressScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
+import ReturnToSportScreen from './src/screens/ReturnToSportScreen';
+import RunningCriteriaScreen from './src/screens/RunningCriteriaScreen';
+import EvaluationCheckpointsScreen from './src/screens/EvaluationCheckpointsScreen';
+
+// Components
+import ErrorBoundary from './src/components/ErrorBoundary';
 
 const Stack = createStackNavigator();
 
 export default function App() {
   return (
-    <ReduxProvider store={store}>
-      <PaperProvider theme={theme}>
-        <NavigationContainer>
-          <Stack.Navigator
+    <ErrorBoundary>
+      <ReduxProvider store={store}>
+        <PaperProvider theme={theme}>
+          <NavigationContainer>
+            <Stack.Navigator
             initialRouteName="Login"
             screenOptions={{
               headerStyle: {
@@ -68,11 +74,6 @@ export default function App() {
               options={{ title: 'AI動作分析' }}
             />
             <Stack.Screen 
-              name="ACLRSI" 
-              component={ACLRSIScreen}
-              options={{ title: 'ACL-RSI評価' }}
-            />
-            <Stack.Screen 
               name="MedicalCollaboration" 
               component={MedicalCollaborationScreen}
               options={{ title: '医療従事者連携' }}
@@ -87,9 +88,25 @@ export default function App() {
               component={ProfileScreen}
               options={{ title: 'プロフィール' }}
             />
-          </Stack.Navigator>
-        </NavigationContainer>
-      </PaperProvider>
-    </ReduxProvider>
+            <Stack.Screen 
+              name="ReturnToSport" 
+              component={ReturnToSportScreen}
+              options={{ title: '競技復帰評価' }}
+            />
+            <Stack.Screen 
+              name="RunningCriteria" 
+              component={RunningCriteriaScreen}
+              options={{ title: 'ランニング基準' }}
+            />
+            <Stack.Screen 
+              name="EvaluationCheckpoints" 
+              component={EvaluationCheckpointsScreen}
+              options={{ title: '評価チェックポイント' }}
+            />
+            </Stack.Navigator>
+          </NavigationContainer>
+        </PaperProvider>
+      </ReduxProvider>
+    </ErrorBoundary>
   );
 }

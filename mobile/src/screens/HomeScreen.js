@@ -5,6 +5,7 @@ import {
   ScrollView,
   Dimensions,
 } from 'react-native';
+import PropTypes from 'prop-types';
 import {
   Text,
   Card,
@@ -337,5 +338,11 @@ const styles = StyleSheet.create({
     color: '#333',
   },
 });
+
+HomeScreen.propTypes = {
+  navigation: PropTypes.shape({
+    navigate: PropTypes.func.isRequired,
+  }).isRequired,
+};
 
 export default HomeScreen;
