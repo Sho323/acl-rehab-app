@@ -70,23 +70,88 @@
             color: #1976d2;
             border-left: 4px solid #2196f3;
         }
+        .phase-selector {
+            margin-top: 15px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+        .phase-btn {
+            background: white;
+            border: 2px solid #667eea;
+            color: #667eea;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        .phase-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+        .phase-btn.active {
+            background: #667eea;
+            color: white;
+        }
+        .current-phase {
+            text-align: center;
+            margin: 20px 0;
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
             <h1>ACL リハビリアプリ</h1>
-            <h2>機能訓練期 (phase_3_3) の運動メニュー</h2>
+            <h2>全フェーズの運動メニュー</h2>
+            <div class="phase-selector">
+                <button onclick="loadPhaseExercises('pre_surgery')" class="phase-btn">術前期</button>
+                <button onclick="loadPhaseExercises('post_surgery_early')" class="phase-btn">術直後期</button>
+                <button onclick="loadPhaseExercises('phase_3_1')" class="phase-btn">基礎回復期</button>
+                <button onclick="loadPhaseExercises('phase_3_2')" class="phase-btn">筋力強化期</button>
+                <button onclick="loadPhaseExercises('phase_3_3')" class="phase-btn active">機能訓練期</button>
+                <button onclick="loadPhaseExercises('phase_3_4')" class="phase-btn">競技復帰期</button>
+            </div>
         </div>
+        <div class="current-phase" id="currentPhase">機能訓練期の運動メニュー</div>
         <div class="exercise-list" id="exerciseList">
             <div class="loading">運動データを読み込み中...</div>
         </div>
     </div>
 
     <script>
-        async function loadExercises() {
+        const phaseNames = {
+            'pre_surgery': '術前期',
+            'post_surgery_early': '術直後期',
+            'phase_3_1': '基礎回復期',
+            'phase_3_2': '筋力強化期',
+            'phase_3_3': '機能訓練期',
+            'phase_3_4': '競技復帰期'
+        };
+
+        let currentPhase = 'phase_3_3';
+
+        async function loadPhaseExercises(phase) {
+            currentPhase = phase;
+            
+            // ボタンのアクティブ状態を更新
+            document.querySelectorAll('.phase-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // フェーズ名を更新
+            document.getElementById('currentPhase').textContent = phaseNames[phase] + 'の運動メニュー';
+            
             try {
-                const response = await fetch('http://localhost:3000/api/exercises/public/phase/phase_3_3');
+                document.getElementById('exerciseList').innerHTML = '<div class="loading">運動データを読み込み中...</div>';
+                
+                const response = await fetch(`http://localhost:3000/api/exercises/public/phase/${phase}`);
                 if (!response.ok) {
                     throw new Error(`API error: ${response.status}`);
                 }
@@ -96,7 +161,7 @@
                 const exerciseList = document.getElementById('exerciseList');
                 
                 if (exercises.length === 0) {
-                    exerciseList.innerHTML = '<div class="error">運動データが見つかりませんでした。</div>';
+                    exerciseList.innerHTML = `<div class="error">${phaseNames[phase]}の運動データが見つかりませんでした。</div>`;
                     return;
                 }
                 
@@ -133,6 +198,11 @@
                 document.getElementById('exerciseList').innerHTML = 
                     `<div class="error">運動データの読み込みに失敗しました: ${error.message}</div>`;
             }
+        }
+
+        async function loadExercises() {
+            // 初期表示は機能訓練期
+            await loadPhaseExercises('phase_3_3');
         }
         
         // ページ読み込み時に実行
