@@ -15,10 +15,10 @@ import {
   Divider,
   IconButton,
 } from 'react-native-paper';
-import { Camera } from 'expo-camera';
-import * as MediaLibrary from 'expo-media-library';
+// import { Camera } from 'expo-camera';
+// import * as MediaLibrary from 'expo-media-library';
 import AIAnalysisDisplay from '../components/AIAnalysisDisplay';
-import aiAnalysisService from '../services/aiAnalysis';
+// import aiAnalysisService from '../services/aiAnalysis';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 

@@ -1,0 +1,10 @@
+{
+  "background_color": "#ffffff",
+  "description": "ACL Rehabilitation Mobile App for Patients",
+  "display": "standalone",
+  "lang": "en",
+  "name": "ACL Rehab App",
+  "short_name": "ACL Rehab App",
+  "start_url": "/?utm_source=web_app_manifest",
+  "orientation": "portrait"
+}

@@ -1,5 +1,5 @@
-import * as tf from '@tensorflow/tfjs';
-import '@tensorflow/tfjs-react-native';
+// import * as tf from '@tensorflow/tfjs';
+// import '@tensorflow/tfjs-react-native';
 
 // AI動作分析サービス
 class AIAnalysisService {

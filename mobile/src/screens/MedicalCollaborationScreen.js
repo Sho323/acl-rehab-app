@@ -342,7 +342,7 @@ const MedicalCollaborationScreen = ({ navigation }) => {
               >
                 運動記録
               </Button>
-            </div>
+            </View>
           </Card.Content>
         </Card>
 
