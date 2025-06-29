@@ -168,14 +168,14 @@ describe('Patient Model', () => {
         }
       ];
 
-      db.limit.mockReturnValue({ offset: jest.fn().mockResolvedValue(mockPatients) });
+      db.offset.mockResolvedValue(mockPatients);
 
       const result = await Patient.findByHospitalId('hospital-id', 50, 0);
 
       expect(db).toHaveBeenCalledWith('patients');
-      expect(db.select).toHaveBeenCalledWith([
+      expect(db.select).toHaveBeenCalledWith(
         'id', 'patient_number', 'name', 'current_phase', 'surgery_date', 'last_login_at'
-      ]);
+      );
       expect(db.where).toHaveBeenCalledWith({ hospital_id: 'hospital-id', is_active: true });
       expect(db.orderBy).toHaveBeenCalledWith('created_at', 'desc');
       expect(db.limit).toHaveBeenCalledWith(50);

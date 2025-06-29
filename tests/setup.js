@@ -15,6 +15,9 @@ jest.mock('../src/config/database', () => {
     update: jest.fn().mockReturnThis(),
     delete: jest.fn().mockReturnThis(),
     returning: jest.fn().mockReturnThis(),
+    orderBy: jest.fn().mockReturnThis(),
+    limit: jest.fn().mockReturnThis(),
+    offset: jest.fn(),
     schema: {
       createTable: jest.fn(),
       dropTable: jest.fn(),

@@ -137,7 +137,7 @@ describe('Auth Routes', () => {
           password: 'password123',
           dateOfBirth: '1990-01-01',
           gender: 'male',
-          hospitalId: 'valid-hospital-uuid-here'
+          hospitalId: '550e8400-e29b-41d4-a716-446655440000'
         });
 
       expect(response.status).toBe(201);

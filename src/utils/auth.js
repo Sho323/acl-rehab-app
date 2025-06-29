@@ -42,6 +42,13 @@ const verifyToken = (token) => {
  */
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
+  // Check for malformed authorization header
+  if (authHeader && !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({
+      error: 'Access token required'
+    });
+  }
+
   const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
 
   if (!token) {

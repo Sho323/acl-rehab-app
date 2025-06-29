@@ -4,7 +4,7 @@ import Constants from 'expo-constants';
 // API基底URL（環境変数対応）
 const API_BASE_URL = Constants.expoConfig?.extra?.apiUrl || 
   (process.env.NODE_ENV === 'production' 
-    ? 'https://your-production-api.com' 
+    ? 'https://acl-rehab-2oz8e3lyq-shotas-projects-1f553362.vercel.app' 
     : 'http://localhost:3000');
 
 // APIクライアントの設定
@@ -129,6 +129,39 @@ export const progressAPI = {
 
   submitACLRSI: async (rsiData, token) => {
     return await apiClient.post('/api/patient/tests/acl-rsi', rsiData, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+  },
+};
+
+// 医療連携API
+export const medicalCollaborationAPI = {
+  getMedicalStaff: async (patientId, token) => {
+    return await apiClient.get(`/api/medical-collaboration/staff?patientId=${patientId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+  },
+
+  sendReport: async (reportData, token) => {
+    return await apiClient.post('/api/medical-collaboration/reports', reportData, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+  },
+
+  getMessages: async (patientId, limit, token) => {
+    return await apiClient.get(`/api/medical-collaboration/messages?patientId=${patientId}&limit=${limit}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+  },
+
+  sendMessage: async (messageData, token) => {
+    return await apiClient.post('/api/medical-collaboration/messages', messageData, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+  },
+
+  getAppointments: async (patientId, token) => {
+    return await apiClient.get(`/api/medical-collaboration/appointments?patientId=${patientId}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
   },

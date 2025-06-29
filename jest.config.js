@@ -14,4 +14,15 @@ module.exports = {
   ],
   setupFilesAfterEnv: ['<rootDir>/tests/setup.js'],
   verbose: true,
+  projects: [
+    {
+      displayName: 'backend',
+      testEnvironment: 'node',
+      testMatch: ['<rootDir>/tests/**/*.test.js'],
+      setupFilesAfterEnv: ['<rootDir>/tests/setup.js'],
+      transform: {
+        '^.+\\.js$': 'babel-jest',
+      },
+    },
+  ],
 };
