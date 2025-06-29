@@ -1,1 +1,142 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"/><meta httpequiv="X-UA-Compatible" content="IE=edge"/><meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1.00001,viewport-fit=cover"/><title>ACL Rehab App</title><style>#root,body,html{width:100%;-webkit-overflow-scrolling:touch;margin:0;padding:0;min-height:100%}#root{flex-shrink:0;flex-basis:auto;flex-grow:1;display:flex;flex:1}html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;height:calc(100% + env(safe-area-inset-top))}body{display:flex;overflow-y:auto;overscroll-behavior-y:none;text-rendering:optimizeLegibility;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;-ms-overflow-style:scrollbar}</style><meta name="description" content="ACL Rehabilitation Mobile App for Patients"><link rel="manifest" href="/manifest.json"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-touch-fullscreen" content="yes"><meta name="apple-mobile-web-app-title" content="ACL Rehab App"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><script defer="defer" src="/static/js/453.acbed429.js"></script><script defer="defer" src="/static/js/main.2b38c9e8.js"></script></head><body><noscript><form action="" style="background-color:#fff;position:fixed;top:0;left:0;right:0;bottom:0;z-index:9999"><div style="font-size:18px;font-family:Helvetica,sans-serif;line-height:24px;margin:10%;width:80%"><p>Oh no! It looks like JavaScript is not enabled in your browser.</p><p style="margin:20px 0"><button type="submit" style="background-color:#4630eb;border-radius:100px;border:none;box-shadow:none;color:#fff;cursor:pointer;font-weight:700;line-height:20px;padding:6px 16px">Reload</button></p></div></form></noscript><div id="root"></div></body></html>
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ACL Rehab App - 機能訓練期テスト</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .exercise-list {
+            padding: 20px;
+        }
+        .exercise-item {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: #fafafa;
+        }
+        .exercise-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .exercise-description {
+            color: #666;
+            margin-bottom: 10px;
+        }
+        .exercise-instructions {
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            white-space: pre-line;
+            line-height: 1.6;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        .error {
+            color: #d32f2f;
+            text-align: center;
+            padding: 20px;
+        }
+        .category-header {
+            background: #e3f2fd;
+            padding: 10px 15px;
+            margin: 20px -20px 15px -20px;
+            font-weight: bold;
+            color: #1976d2;
+            border-left: 4px solid #2196f3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>ACL リハビリアプリ</h1>
+            <h2>機能訓練期 (phase_3_3) の運動メニュー</h2>
+        </div>
+        <div class="exercise-list" id="exerciseList">
+            <div class="loading">運動データを読み込み中...</div>
+        </div>
+    </div>
+
+    <script>
+        async function loadExercises() {
+            try {
+                const response = await fetch('http://localhost:3000/api/exercises/public/phase/phase_3_3');
+                if (!response.ok) {
+                    throw new Error(`API error: ${response.status}`);
+                }
+                
+                const exercises = await response.json();
+                
+                const exerciseList = document.getElementById('exerciseList');
+                
+                if (exercises.length === 0) {
+                    exerciseList.innerHTML = '<div class="error">運動データが見つかりませんでした。</div>';
+                    return;
+                }
+                
+                // カテゴリ別にグループ化
+                const groupedExercises = exercises.reduce((acc, exercise) => {
+                    const category = exercise.category_name || 'その他';
+                    if (!acc[category]) {
+                        acc[category] = [];
+                    }
+                    acc[category].push(exercise);
+                    return acc;
+                }, {});
+                
+                let html = '';
+                
+                Object.entries(groupedExercises).forEach(([category, categoryExercises]) => {
+                    html += `<div class="category-header">${category}</div>`;
+                    
+                    categoryExercises.forEach(exercise => {
+                        html += `
+                            <div class="exercise-item">
+                                <div class="exercise-name">${exercise.name}</div>
+                                <div class="exercise-description">${exercise.description}</div>
+                                <div class="exercise-instructions">${exercise.instructions || '詳細な実施方法はありません'}</div>
+                            </div>
+                        `;
+                    });
+                });
+                
+                exerciseList.innerHTML = html;
+                
+            } catch (error) {
+                console.error('Error loading exercises:', error);
+                document.getElementById('exerciseList').innerHTML = 
+                    `<div class="error">運動データの読み込みに失敗しました: ${error.message}</div>`;
+            }
+        }
+        
+        // ページ読み込み時に実行
+        loadExercises();
+    </script>
+</body>
+</html>

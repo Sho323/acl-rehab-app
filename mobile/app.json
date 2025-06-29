@@ -22,7 +22,7 @@
     },
     "web": {},
     "extra": {
-      "apiUrl": "https://acl-rehab-2oz8e3lyq-shotas-projects-1f553362.vercel.app"
+      "apiUrl": "http://localhost:3000"
     }
   }
 }

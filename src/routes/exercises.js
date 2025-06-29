@@ -4,6 +4,18 @@ const Exercise = require('../models/Exercise');
 const { authenticateToken } = require('../utils/auth');
 const logger = require('../utils/logger');
 
+// パブリック: フェーズ別運動一覧の取得（認証不要）
+router.get('/public/phase/:phase', async (req, res) => {
+  try {
+    const { phase } = req.params;
+    const exercises = await Exercise.getExercisesByPhase(phase);
+    res.json(exercises);
+  } catch (error) {
+    logger.error('Error fetching public exercises by phase:', { error: error.message, phase });
+    res.status(500).json({ error: 'Failed to fetch exercises' });
+  }
+});
+
 // 運動カテゴリー一覧の取得
 router.get('/categories', authenticateToken, async (req, res) => {
   try {

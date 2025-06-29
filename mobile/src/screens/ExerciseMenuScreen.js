@@ -46,24 +46,69 @@ const ExerciseMenuScreen = ({ navigation }) => {
       const userPhase = user.currentPhase || 'pre_surgery';
       dispatch(setCurrentPhase(userPhase));
       
-      // デモ用のダミーデータを設定（実際のAPIが利用できない場合）
-      if (!token) {
-        // ダミーデータで患者プランを設定
-        const dummyPlan = getDummyExercisePlan(userPhase);
-        // Redux storeに直接設定する代わりに、ローカル状態で管理
-        setLocalPatientPlan(dummyPlan);
-      } else {
+      // 常に実際のAPIから運動プランを取得
+      if (token) {
         // 患者の運動プランを取得
         dispatch(fetchPatientExercisePlan({
           patientId: user.id,
           phase: userPhase,
           token: token
         }));
+      } else {
+        // トークンがない場合は公開APIから運動データを取得
+        fetchPublicExerciseData(userPhase);
       }
     }
   }, [dispatch, user, token]);
 
   const [localPatientPlan, setLocalPatientPlan] = useState([]);
+
+  // 公開APIから運動データを取得
+  const fetchPublicExerciseData = async (phase) => {
+    try {
+      // APIからフェーズ別の運動データを取得（パブリックエンドポイント）
+      const response = await fetch(`http://localhost:3000/api/exercises/public/phase/${phase}`);
+      if (response.ok) {
+        const exercises = await response.json();
+        
+        // 運動データをカテゴリ別にグループ化
+        const categorizedExercises = exercises.reduce((acc, exercise) => {
+          const category = exercise.category_name || 'その他';
+          if (!acc[category]) {
+            acc[category] = [];
+          }
+          acc[category].push({
+            id: exercise.id,
+            exercise_name: exercise.name,
+            description: exercise.description,
+            instructions: exercise.instructions,
+            category_name: category,
+            assigned_sets: exercise.default_sets,
+            assigned_reps: exercise.default_reps,
+            duration: exercise.default_duration_seconds > 0 ? `${exercise.default_duration_seconds}秒` : '',
+            difficulty_level: exercise.difficulty_level,
+            requires_ai_analysis: exercise.requires_ai_analysis,
+            is_completed: false,
+          });
+          return acc;
+        }, {});
+        
+        // データをフラットな配列に変換
+        const exerciseList = Object.values(categorizedExercises).flat();
+        setLocalPatientPlan(exerciseList);
+      } else {
+        console.error('Failed to fetch exercise data:', response.status);
+        // フォールバックとしてダミーデータを使用
+        const dummyPlan = getDummyExercisePlan(phase);
+        setLocalPatientPlan(dummyPlan);
+      }
+    } catch (error) {
+      console.error('Error fetching exercise data:', error);
+      // エラー時はダミーデータを使用
+      const dummyPlan = getDummyExercisePlan(phase);
+      setLocalPatientPlan(dummyPlan);
+    }
+  };
 
   // ダミーデータ生成関数
   const getDummyExercisePlan = (phase) => {
