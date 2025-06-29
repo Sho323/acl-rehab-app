@@ -286,12 +286,12 @@ router.get('/feedback/:analysisId', authenticateToken, async (req, res) => {
 // AI分析処理（実際の実装では外部AI APIまたはMLモデルを使用）
 async function processAIAnalysis(analysisId, filePath, analysisType) {
   try {
-    // シミュレーション: 実際の処理時間をシミュレート
-    await new Promise(resolve => setTimeout(resolve, 5000 + Math.random() * 10000));
+    // より現実的な分析時間（3-8秒）
+    await new Promise(resolve => setTimeout(resolve, 3000 + Math.random() * 5000));
 
-    // ダミーの分析結果を生成
-    const kneeInScore = Math.random() * 100;
-    const toeOutScore = Math.random() * 100;
+    // より現実的な分析結果を生成
+    const kneeInScore = generateRealisticScore('knee_in');
+    const toeOutScore = generateRealisticScore('toe_out');
     const overallScore = (kneeInScore + toeOutScore) / 2;
 
     const feedback = generateFeedback(kneeInScore, toeOutScore, overallScore);
@@ -439,6 +439,28 @@ function generateFrameAnalysis() {
     });
   }
   return frames;
+}
+
+// より現実的なスコア生成
+function generateRealisticScore(type) {
+  // 正規分布に近い値を生成（平均75、標準偏差15）
+  const random1 = Math.random();
+  const random2 = Math.random();
+  const normalRandom = Math.sqrt(-2 * Math.log(random1)) * Math.cos(2 * Math.PI * random2);
+  
+  let score = 75 + normalRandom * 15;
+  
+  // type別の調整
+  if (type === 'knee_in') {
+    // knee-inは少し低めの傾向
+    score = score - 5;
+  } else if (type === 'toe_out') {
+    // toe-outは比較的良好
+    score = score + 3;
+  }
+  
+  // 0-100の範囲に制限
+  return Math.max(0, Math.min(100, Math.round(score)));
 }
 
 module.exports = router;

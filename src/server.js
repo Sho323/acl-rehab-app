@@ -55,7 +55,7 @@ app.get('/health', (req, res) => {
 app.use('/auth', authRoutes);
 app.use('/api/exercises', exerciseRoutes);
 app.use('/api/patient/progress', progressRoutes);
-app.use('/api/patient/videos', videosRoutes);
+app.use('/api/videos', videosRoutes);
 app.use('/api/ai', aiAnalysisRoutes);
 app.use('/api/medical-collaboration', medicalCollaborationRoutes);
 app.use('/api/patient', patientsRoutes);

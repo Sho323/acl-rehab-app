@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ACL Rehab App - デモメニュー</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #2196F3 0%, #21CBF3 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .demo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            padding: 30px;
+        }
+        .demo-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .demo-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        .demo-icon {
+            font-size: 48px;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        .demo-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .demo-description {
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        .demo-button {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+            transition: background 0.3s ease;
+        }
+        .demo-button:hover {
+            background: #45a049;
+        }
+        .demo-button.ai {
+            background: #FF6B35;
+        }
+        .demo-button.ai:hover {
+            background: #e55a2b;
+        }
+        .features {
+            background: #f1f3f4;
+            padding: 20px 30px;
+            border-top: 1px solid #e0e0e0;
+        }
+        .features h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+        .feature-list li {
+            padding: 5px 0;
+            color: #666;
+        }
+        .feature-list li:before {
+            content: "✓ ";
+            color: #4CAF50;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏥 ACL リハビリテーション アプリ</h1>
+            <p>包括的なリハビリテーション支援システム</p>
+        </div>
+        
+        <div class="demo-grid">
+            <div class="demo-card">
+                <div class="demo-icon">📋</div>
+                <div class="demo-title">運動メニュー</div>
+                <div class="demo-description">
+                    ACL手術前後の6つのフェーズに分けられた詳細な運動プログラム。各運動には準備、実施方法、コツ、注意点が含まれています。
+                </div>
+                <a href="index.html" class="demo-button">運動メニューを見る</a>
+            </div>
+            
+            <div class="demo-card">
+                <div class="demo-icon">🤖</div>
+                <div class="demo-title">AI動作分析</div>
+                <div class="demo-description">
+                    TensorFlow.jsとPoseNetを使用したリアルタイム動作分析。膝の内側への傾きや足首のアライメントを自動評価します。
+                </div>
+                <a href="ai-motion-analysis.html" class="demo-button ai">AI分析を試す</a>
+            </div>
+            
+            <div class="demo-card">
+                <div class="demo-icon">🎥</div>
+                <div class="demo-title">動画AI分析（新機能）</div>
+                <div class="demo-description">
+                    動画アップロード、リアルタイム録画、ライブ分析の3つのモードで動作を詳細評価。サーバーAIによる高精度分析も対応。
+                </div>
+                <a href="ai-video-analysis.html" class="demo-button" style="background: #4CAF50;">動画分析を試す</a>
+            </div>
+            
+            <div class="demo-card">
+                <div class="demo-icon">🎯</div>
+                <div class="demo-title">ACL-RSI評価</div>
+                <div class="demo-description">
+                    ACL Return to Sport after Injury評価スケール。スポーツ復帰に向けた心理的準備状態を測定します。
+                </div>
+                <a href="acl-rsi-demo.html" class="demo-button">評価を受ける</a>
+            </div>
+            
+            <div class="demo-card">
+                <div class="demo-icon">💪</div>
+                <div class="demo-title">運動セッション</div>
+                <div class="demo-description">
+                    個別の運動セッションデモ。タイマー機能、進捗記録、リアルタイムフィードバックを体験できます。
+                </div>
+                <a href="session-demo.html" class="demo-button">セッション開始</a>
+            </div>
+        </div>
+        
+        <div class="features">
+            <h3>🚀 主要機能</h3>
+            <ul class="feature-list">
+                <li>6段階のリハビリフェーズ管理</li>
+                <li>38種類の詳細運動プログラム</li>
+                <li>リアルタイムAI動作分析</li>
+                <li>姿勢推定による膝・足首アライメント評価</li>
+                <li>心理的準備状態評価 (ACL-RSI)</li>
+                <li>個別化された運動セッション</li>
+                <li>進捗記録とデータ分析</li>
+                <li>医療従事者との連携機能</li>
+                <li>スポーツ復帰評価基準</li>
+                <li>外傷予防プログラム</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

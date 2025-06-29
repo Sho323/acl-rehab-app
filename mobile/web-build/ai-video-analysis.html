@@ -1,0 +1,1342 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ACL Rehab - 動画AI分析</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.15.0/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection@2.1.0/dist/pose-detection.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/posenet@2.2.2/dist/posenet.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #2196F3 0%, #21CBF3 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .nav-tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .nav-tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        .nav-tab.active {
+            background: white;
+            color: #2196F3;
+            border-bottom: 3px solid #2196F3;
+        }
+        .nav-tab:hover {
+            background: #e9ecef;
+        }
+        .tab-content {
+            display: none;
+            padding: 20px;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 20px;
+            min-height: 600px;
+        }
+        .video-section {
+            background: #000;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+        .analysis-panel {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+        }
+        #videoElement, #uploadedVideo {
+            width: 100%;
+            height: auto;
+            max-height: 600px;
+            object-fit: cover;
+        }
+        #canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+        }
+        .upload-area {
+            border: 2px dashed #ccc;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            background: #f8f9fa;
+        }
+        .upload-area:hover {
+            border-color: #2196F3;
+            background: #e3f2fd;
+        }
+        .upload-area.dragover {
+            border-color: #2196F3;
+            background: #e3f2fd;
+        }
+        .upload-icon {
+            font-size: 48px;
+            color: #ccc;
+            margin-bottom: 10px;
+        }
+        .file-input {
+            display: none;
+        }
+        .btn {
+            padding: 12px 24px;
+            margin: 5px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        .btn-primary {
+            background: #4CAF50;
+            color: white;
+        }
+        .btn-danger {
+            background: #F44336;
+            color: white;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .btn-upload {
+            background: #FF9800;
+            color: white;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .controls {
+            padding: 15px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            text-align: center;
+        }
+        .recording-indicator {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: rgba(244,67,54,0.9);
+            padding: 10px;
+            border-radius: 20px;
+            margin: 10px;
+        }
+        .recording-indicator.active {
+            display: flex;
+        }
+        .recording-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: white;
+            margin-right: 8px;
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        .analysis-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .score-display {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .score-circle {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+            color: white;
+            text-align: center;
+        }
+        .score-good { background: #4CAF50; }
+        .score-moderate { background: #FF9800; }
+        .score-poor { background: #F44336; }
+        .feedback-section {
+            margin-top: 15px;
+        }
+        .feedback-level {
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        .feedback-good { background: #d4edda; color: #155724; }
+        .feedback-moderate { background: #fff3cd; color: #856404; }
+        .feedback-poor { background: #f8d7da; color: #721c24; }
+        .suggestions {
+            list-style: none;
+            padding: 0;
+        }
+        .suggestions li {
+            padding: 5px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .suggestions li:before {
+            content: "💡 ";
+            margin-right: 8px;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: #2196F3;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        .status {
+            text-align: center;
+            padding: 20px;
+            font-size: 16px;
+        }
+        .loading { color: #2196F3; }
+        .error { color: #F44336; }
+        .success { color: #4CAF50; }
+        .video-info {
+            font-size: 12px;
+            color: #666;
+            margin-top: 10px;
+        }
+        .exercise-selector {
+            margin-bottom: 15px;
+        }
+        .exercise-selector select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        @media (max-width: 1024px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎥 ACL リハビリ - 動画AI分析</h1>
+            <p>リアルタイム撮影または動画アップロードによる詳細な動作評価</p>
+        </div>
+        
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="switchTab('upload')">📁 動画アップロード</button>
+            <button class="nav-tab" onclick="switchTab('record')">📹 リアルタイム撮影</button>
+            <button class="nav-tab" onclick="switchTab('live')">🔴 ライブ分析</button>
+        </div>
+
+        <!-- 動画アップロードタブ -->
+        <div id="upload-tab" class="tab-content active">
+            <div class="main-grid">
+                <div class="video-section">
+                    <div id="uploadArea" class="upload-area">
+                        <div class="upload-icon">📁</div>
+                        <h3>動画ファイルをアップロード</h3>
+                        <p>MP4, MOV, AVI形式の動画をドラッグ&ドロップまたはクリックして選択</p>
+                        <button class="btn btn-upload" onclick="document.getElementById('fileInput').click()">
+                            ファイルを選択
+                        </button>
+                        <input type="file" id="fileInput" class="file-input" accept="video/*" />
+                    </div>
+                    <video id="uploadedVideo" controls style="display: none;"></video>
+                    <canvas id="uploadCanvas" style="display: none;"></canvas>
+                    
+                    <div class="controls" id="uploadControls" style="display: none;">
+                        <button id="analyzeUploadBtn" class="btn btn-primary">AI分析開始</button>
+                        <button id="resetUploadBtn" class="btn btn-secondary">リセット</button>
+                        <div class="progress-bar">
+                            <div id="uploadProgress" class="progress-fill"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="analysis-panel">
+                    <div class="exercise-selector">
+                        <label for="uploadExerciseType">運動タイプ:</label>
+                        <select id="uploadExerciseType">
+                            <option value="squat">スクワット</option>
+                            <option value="lunge">ランジ</option>
+                            <option value="step_up">ステップアップ</option>
+                            <option value="single_leg_squat">片足スクワット</option>
+                        </select>
+                    </div>
+                    
+                    <div id="uploadAnalysisResults">
+                        <div class="status">
+                            動画をアップロードしてAI分析を開始してください
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- リアルタイム撮影タブ -->
+        <div id="record-tab" class="tab-content">
+            <div class="main-grid">
+                <div class="video-section">
+                    <video id="recordVideo" autoplay muted playsinline style="display: none;"></video>
+                    <video id="playbackVideo" controls style="display: none;"></video>
+                    <canvas id="recordCanvas"></canvas>
+                    
+                    <div class="recording-indicator" id="recordingIndicator">
+                        <div class="recording-dot"></div>
+                        <span>録画中...</span>
+                    </div>
+                    
+                    <div class="controls">
+                        <button id="startRecordBtn" class="btn btn-danger">📹 録画開始</button>
+                        <button id="stopRecordBtn" class="btn btn-secondary" disabled>⏹ 録画停止</button>
+                        <button id="analyzeRecordBtn" class="btn btn-primary" disabled>AI分析開始</button>
+                        <button id="resetRecordBtn" class="btn btn-secondary">リセット</button>
+                    </div>
+                </div>
+                
+                <div class="analysis-panel">
+                    <div class="exercise-selector">
+                        <label for="recordExerciseType">運動タイプ:</label>
+                        <select id="recordExerciseType">
+                            <option value="squat">スクワット</option>
+                            <option value="lunge">ランジ</option>
+                            <option value="step_up">ステップアップ</option>
+                            <option value="single_leg_squat">片足スクワット</option>
+                        </select>
+                    </div>
+                    
+                    <div id="recordAnalysisResults">
+                        <div class="status">
+                            カメラを起動して運動を録画してください
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ライブ分析タブ -->
+        <div id="live-tab" class="tab-content">
+            <div class="main-grid">
+                <div class="video-section">
+                    <video id="liveVideo" autoplay muted playsinline></video>
+                    <canvas id="liveCanvas"></canvas>
+                    
+                    <div class="controls">
+                        <button id="startLiveBtn" class="btn btn-primary">🔴 ライブ分析開始</button>
+                        <button id="stopLiveBtn" class="btn btn-danger" disabled>⏹ 分析停止</button>
+                        <button id="resetLiveBtn" class="btn btn-secondary">リセット</button>
+                    </div>
+                </div>
+                
+                <div class="analysis-panel">
+                    <div class="exercise-selector">
+                        <label for="liveExerciseType">運動タイプ:</label>
+                        <select id="liveExerciseType">
+                            <option value="squat">スクワット</option>
+                            <option value="lunge">ランジ</option>
+                            <option value="step_up">ステップアップ</option>
+                            <option value="single_leg_squat">片足スクワット</option>
+                        </select>
+                    </div>
+                    
+                    <div id="liveAnalysisResults">
+                        <div class="status">
+                            カメラを起動してリアルタイム分析を開始してください
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class VideoAIAnalysis {
+            constructor() {
+                this.detector = null;
+                this.currentTab = 'upload';
+                this.mediaRecorder = null;
+                this.recordedChunks = [];
+                this.analysisInterval = null;
+                this.analysisHistory = [];
+                
+                this.initializeSystem();
+                this.setupEventListeners();
+            }
+
+            async initializeSystem() {
+                try {
+                    this.updateStatus('upload', 'loading', 'AI分析システムを初期化中...');
+                    
+                    // PoseNet detector を初期化
+                    const model = poseDetection.SupportedModels.PoseNet;
+                    this.detector = await poseDetection.createDetector(model, {
+                        quantBytes: 4,
+                        architecture: 'MobileNetV1',
+                        outputStride: 16,
+                        inputResolution: { width: 640, height: 480 },
+                        multiplier: 0.75
+                    });
+
+                    this.updateStatus('upload', '', '動画をアップロードしてAI分析を開始してください');
+                    console.log('動画AI分析システム初期化完了');
+                    
+                } catch (error) {
+                    console.error('初期化エラー:', error);
+                    this.updateStatus('upload', 'error', `初期化に失敗しました: ${error.message}`);
+                }
+            }
+
+            setupEventListeners() {
+                // ファイルアップロード
+                const fileInput = document.getElementById('fileInput');
+                const uploadArea = document.getElementById('uploadArea');
+                
+                fileInput.addEventListener('change', (e) => this.handleFileSelect(e));
+                
+                // ドラッグ&ドロップ
+                uploadArea.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    uploadArea.classList.add('dragover');
+                });
+                
+                uploadArea.addEventListener('dragleave', () => {
+                    uploadArea.classList.remove('dragover');
+                });
+                
+                uploadArea.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    uploadArea.classList.remove('dragover');
+                    const files = e.dataTransfer.files;
+                    if (files.length > 0) {
+                        this.handleVideoFile(files[0]);
+                    }
+                });
+
+                // アップロード分析ボタン
+                document.getElementById('analyzeUploadBtn').addEventListener('click', () => this.analyzeUploadedVideo());
+                document.getElementById('resetUploadBtn').addEventListener('click', () => this.resetUpload());
+
+                // 録画機能
+                document.getElementById('startRecordBtn').addEventListener('click', () => this.startRecording());
+                document.getElementById('stopRecordBtn').addEventListener('click', () => this.stopRecording());
+                document.getElementById('analyzeRecordBtn').addEventListener('click', () => this.analyzeRecordedVideo());
+                document.getElementById('resetRecordBtn').addEventListener('click', () => this.resetRecord());
+
+                // ライブ分析
+                document.getElementById('startLiveBtn').addEventListener('click', () => this.startLiveAnalysis());
+                document.getElementById('stopLiveBtn').addEventListener('click', () => this.stopLiveAnalysis());
+                document.getElementById('resetLiveBtn').addEventListener('click', () => this.resetLive());
+            }
+
+            switchTab(tabName) {
+                this.currentTab = tabName;
+                
+                // タブボタンの更新
+                document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
+                document.querySelector(`[onclick="switchTab('${tabName}')"]`).classList.add('active');
+                
+                // タブコンテンツの更新
+                document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                document.getElementById(`${tabName}-tab`).classList.add('active');
+                
+                // タブ切り替え時の初期化
+                if (tabName === 'record') {
+                    this.initializeCamera('recordVideo');
+                } else if (tabName === 'live') {
+                    this.initializeCamera('liveVideo');
+                }
+            }
+
+            async initializeCamera(videoElementId) {
+                try {
+                    const video = document.getElementById(videoElementId);
+                    
+                    // カメラアクセス可能性チェック
+                    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                        throw new Error('このブラウザはカメラアクセスをサポートしていません。Chrome、Firefox、Safari等の最新ブラウザをご使用ください。');
+                    }
+
+                    // HTTPSチェック
+                    if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+                        throw new Error('セキュリティ上の理由でカメラにアクセスできません。HTTPSまたはlocalhost経由でアクセスしてください。');
+                    }
+
+                    this.updateStatus(this.currentTab, 'loading', 'カメラアクセスを要求中...');
+                    
+                    const stream = await navigator.mediaDevices.getUserMedia({
+                        video: { 
+                            width: { ideal: 640 },
+                            height: { ideal: 480 },
+                            facingMode: 'user'
+                        }
+                    });
+                    
+                    video.srcObject = stream;
+                    video.style.display = 'block';
+                    
+                    // キャンバスサイズ調整
+                    video.addEventListener('loadedmetadata', () => {
+                        const canvas = document.getElementById(videoElementId.replace('Video', 'Canvas'));
+                        if (canvas) {
+                            canvas.width = video.videoWidth;
+                            canvas.height = video.videoHeight;
+                            canvas.style.width = video.offsetWidth + 'px';
+                            canvas.style.height = video.offsetHeight + 'px';
+                        }
+                    });
+
+                    this.updateStatus(this.currentTab, 'success', 'カメラが正常に初期化されました');
+                    
+                } catch (error) {
+                    console.error('カメラ初期化エラー:', error);
+                    
+                    let errorMessage = 'カメラへのアクセスに失敗しました';
+                    let showFallback = true;
+                    
+                    if (error.name === 'NotAllowedError') {
+                        errorMessage = 'カメラへのアクセスが拒否されました。ブラウザの設定でカメラアクセスを許可してください。';
+                    } else if (error.name === 'NotFoundError') {
+                        errorMessage = 'カメラが見つかりません。デバイスにカメラが接続されているか確認してください。';
+                    } else if (error.name === 'NotSecureError' || error.message.includes('secure')) {
+                        errorMessage = 'セキュリティ上の理由でカメラにアクセスできません。HTTPSまたはlocalhost経由でアクセスしてください。';
+                    } else if (error.message.includes('getUserMedia')) {
+                        errorMessage = 'このブラウザまたは環境ではカメラアクセスがサポートされていません。';
+                    } else {
+                        errorMessage = error.message;
+                    }
+                    
+                    this.updateStatus(this.currentTab, 'error', errorMessage);
+                    
+                    if (showFallback) {
+                        this.showCameraFallback(this.currentTab);
+                    }
+                }
+            }
+
+            showCameraFallback(tabType) {
+                const statusDiv = document.getElementById(`${tabType}AnalysisResults`);
+                statusDiv.innerHTML = `
+                    <div class="analysis-card">
+                        <h3>⚠️ カメラアクセスができません</h3>
+                        
+                        <div style="margin: 20px 0;">
+                            <p><strong>解決方法:</strong></p>
+                            <ol style="text-align: left; padding-left: 20px;">
+                                <li><strong>HTTPS接続:</strong> https://192.168.3.186:3001/ai-video-analysis.html でアクセス</li>
+                                <li><strong>ブラウザ権限:</strong> アドレスバーのカメラアイコンをクリックして許可</li>
+                                <li><strong>ブラウザ変更:</strong> Chrome、Firefox、Safari等の最新ブラウザを使用</li>
+                                <li><strong>カメラ確認:</strong> カメラが正しく接続されているか確認</li>
+                            </ol>
+                        </div>
+
+                        <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                            <p><strong>🔄 代替案:</strong></p>
+                            <p>カメラが使用できない場合でも、動画ファイルをアップロードしてAI分析を実行できます。</p>
+                        </div>
+
+                        <div style="text-align: center; margin: 20px 0;">
+                            ${tabType === 'upload' ? '' : `
+                                <button onclick="window.videoAnalysis.switchTab('upload')" 
+                                        style="background: #4CAF50; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: bold; margin: 5px;">
+                                    📁 動画アップロードに切り替え
+                                </button>
+                            `}
+                            <a href="camera-help.html" target="_blank"
+                               style="background: #2196F3; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block; margin: 5px;">
+                                🔧 設定ガイドを見る
+                            </a>
+                        </div>
+
+                        <div style="background: #fff3cd; padding: 10px; border-radius: 5px; font-size: 12px; color: #856404;">
+                            <strong>ヒント:</strong> ローカル環境 (localhost) でも動作しますが、
+                            実際のテストには https:// 接続をお勧めします。
+                        </div>
+                    </div>
+                `;
+            }
+
+            handleFileSelect(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    this.handleVideoFile(file);
+                }
+            }
+
+            async handleVideoFile(file) {
+                if (!file.type.startsWith('video/')) {
+                    alert('動画ファイルを選択してください');
+                    return;
+                }
+
+                const video = document.getElementById('uploadedVideo');
+                const uploadArea = document.getElementById('uploadArea');
+                const controls = document.getElementById('uploadControls');
+
+                const url = URL.createObjectURL(file);
+                video.src = url;
+                video.style.display = 'block';
+                uploadArea.style.display = 'none';
+                controls.style.display = 'block';
+
+                video.addEventListener('loadedmetadata', () => {
+                    const canvas = document.getElementById('uploadCanvas');
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    
+                    this.updateStatus('upload', 'success', `動画読み込み完了: ${file.name}`);
+                });
+
+                // サーバーに動画をアップロード
+                await this.uploadVideoToServer(file);
+            }
+
+            async uploadVideoToServer(file) {
+                try {
+                    this.updateStatus('upload', 'loading', 'サーバーに動画をアップロード中...');
+                    
+                    const formData = new FormData();
+                    formData.append('video', file);
+                    formData.append('exerciseType', document.getElementById('uploadExerciseType').value);
+                    formData.append('description', `Uploaded by AI Video Analysis Demo`);
+
+                    const response = await fetch('http://192.168.3.186:3000/api/videos/public/upload', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        this.uploadedVideoId = result.data.id;
+                        this.updateStatus('upload', 'success', `動画アップロード完了: ${result.data.originalName}`);
+                    } else {
+                        console.warn('動画アップロードに失敗:', result.message);
+                    }
+                } catch (error) {
+                    console.warn('動画アップロードエラー:', error);
+                    // アップロードに失敗してもローカル分析は可能
+                }
+            }
+
+            displayServerAnalysisResults(analysisData, tabType) {
+                const resultsDiv = document.getElementById(`${tabType}AnalysisResults`);
+                
+                const { avgScores, frameCount, issueCount, issueRate, feedback, duration } = analysisData;
+                
+                resultsDiv.innerHTML = `
+                    <div class="analysis-card">
+                        <h3>🤖 サーバーAI分析結果</h3>
+                        <div class="score-display">
+                            <div class="score-circle ${this.getScoreClass(avgScores.kneeIn)}">
+                                ${avgScores.kneeIn}
+                                <div style="font-size: 10px;">膝</div>
+                            </div>
+                            <div class="score-circle ${this.getScoreClass(avgScores.toeOut)}">
+                                ${avgScores.toeOut}
+                                <div style="font-size: 10px;">足首</div>
+                            </div>
+                            <div class="score-circle ${this.getScoreClass(avgScores.overall)}">
+                                ${avgScores.overall}
+                                <div style="font-size: 10px;">総合</div>
+                            </div>
+                        </div>
+                        
+                        <div style="text-align: center; margin: 15px 0; background: #f0f8ff; padding: 15px; border-radius: 8px;">
+                            <p><strong>📊 詳細統計</strong></p>
+                            <p><strong>分析フレーム数:</strong> ${frameCount} フレーム</p>
+                            <p><strong>動画時間:</strong> ${duration}秒</p>
+                            <p><strong>問題検出:</strong> ${issueCount}回 (${issueRate}%)</p>
+                        </div>
+                        
+                        <div class="feedback-section">
+                            <div class="feedback-level feedback-${feedback.level}">
+                                ${feedback.message}
+                            </div>
+                            
+                            ${feedback.strengths && feedback.strengths.length > 0 ? `
+                                <h4>✅ 優れている点:</h4>
+                                <ul class="suggestions">
+                                    ${feedback.strengths.map(s => `<li style="color: #155724;">${s}</li>`).join('')}
+                                </ul>
+                            ` : ''}
+                            
+                            ${feedback.improvements && feedback.improvements.length > 0 ? `
+                                <h4>⚠️ 改善が必要な点:</h4>
+                                <ul class="suggestions">
+                                    ${feedback.improvements.map(s => `<li style="color: #856404;">${s}</li>`).join('')}
+                                </ul>
+                            ` : ''}
+                            
+                            ${feedback.suggestions && feedback.suggestions.length > 0 ? `
+                                <h4>💡 改善提案:</h4>
+                                <ul class="suggestions">
+                                    ${feedback.suggestions.map(s => `<li>${s}</li>`).join('')}
+                                </ul>
+                            ` : ''}
+                        </div>
+                        
+                        <div style="margin-top: 20px; padding: 10px; background: #e8f5e8; border-radius: 5px; font-size: 12px;">
+                            <strong>🔬 分析詳細:</strong> サーバーサイドAIによる高精度分析<br>
+                            運動タイプ: ${analysisData.exerciseType}<br>
+                            分析完了時刻: ${new Date(analysisData.analyzedAt).toLocaleString('ja-JP')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            async analyzeUploadedVideo() {
+                const video = document.getElementById('uploadedVideo');
+                const exerciseType = document.getElementById('uploadExerciseType').value;
+                
+                if (!this.detector) {
+                    this.updateStatus('upload', 'error', 'AI分析システムが初期化されていません');
+                    return;
+                }
+
+                // アップロードされた動画をサーバーに送信（バックエンド分析の場合）
+                if (this.uploadedVideoId && confirm('サーバーでの詳細分析も実行しますか？（推奨）')) {
+                    this.updateStatus('upload', 'loading', 'サーバーでAI分析を開始中...');
+                    
+                    try {
+                        const response = await fetch(`http://192.168.3.186:3000/api/videos/public/${this.uploadedVideoId}/analyze`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                analysisType: 'motion_analysis'
+                            })
+                        });
+                        
+                        const result = await response.json();
+                        
+                        if (result.success) {
+                            this.pollAnalysisResult(result.data.analysisId, 'upload');
+                            return;
+                        }
+                    } catch (error) {
+                        console.warn('サーバー分析の開始に失敗:', error);
+                        // フォールバックでローカル分析を実行
+                    }
+                }
+
+                this.updateStatus('upload', 'loading', '動画を分析中...');
+                
+                try {
+                    const analysisResults = [];
+                    const totalDuration = video.duration;
+                    const sampleInterval = 2; // 2秒間隔でサンプリング
+                    
+                    for (let time = 0; time < totalDuration; time += sampleInterval) {
+                        video.currentTime = time;
+                        
+                        await new Promise(resolve => {
+                            video.addEventListener('seeked', resolve, { once: true });
+                        });
+                        
+                        // 少し待機してフレームが安定するのを待つ
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                        
+                        const poses = await this.detector.estimatePoses(video);
+                        
+                        if (poses.length > 0) {
+                            const analysis = this.analyzePose(poses[0], exerciseType);
+                            analysisResults.push(analysis);
+                        }
+                        
+                        // プログレス更新
+                        const progress = (time / totalDuration) * 100;
+                        document.getElementById('uploadProgress').style.width = progress + '%';
+                    }
+                    
+                    // 結果表示
+                    this.displayVideoAnalysisResults(analysisResults, 'upload');
+                    
+                } catch (error) {
+                    console.error('動画分析エラー:', error);
+                    this.updateStatus('upload', 'error', '動画分析に失敗しました');
+                }
+            }
+
+            async pollAnalysisResult(analysisId, tabType) {
+                const maxAttempts = 30; // 最大30回（約2.5分）
+                let attempts = 0;
+                
+                const poll = async () => {
+                    attempts++;
+                    
+                    try {
+                        const response = await fetch(`http://192.168.3.186:3000/api/videos/public/analysis/${analysisId}`);
+                        const result = await response.json();
+                        
+                        if (result.success && result.data.status === 'completed') {
+                            this.displayServerAnalysisResults(result.data, tabType);
+                            return;
+                        } else if (result.data.status === 'failed') {
+                            this.updateStatus(tabType, 'error', 'サーバー分析に失敗しました');
+                            return;
+                        }
+                        
+                        if (attempts < maxAttempts) {
+                            this.updateStatus(tabType, 'loading', `サーバーで分析中... (${attempts}/${maxAttempts})`);
+                            setTimeout(poll, 5000); // 5秒後に再試行
+                        } else {
+                            this.updateStatus(tabType, 'error', '分析がタイムアウトしました');
+                        }
+                        
+                    } catch (error) {
+                        console.error('分析結果取得エラー:', error);
+                        if (attempts < maxAttempts) {
+                            setTimeout(poll, 5000);
+                        } else {
+                            this.updateStatus(tabType, 'error', '分析結果の取得に失敗しました');
+                        }
+                    }
+                };
+                
+                poll();
+            }
+
+            async startRecording() {
+                try {
+                    const video = document.getElementById('recordVideo');
+                    const stream = video.srcObject;
+                    
+                    if (!stream) {
+                        await this.initializeCamera('recordVideo');
+                        return;
+                    }
+
+                    this.recordedChunks = [];
+                    this.mediaRecorder = new MediaRecorder(stream);
+                    
+                    this.mediaRecorder.ondataavailable = (event) => {
+                        if (event.data.size > 0) {
+                            this.recordedChunks.push(event.data);
+                        }
+                    };
+                    
+                    this.mediaRecorder.onstop = () => {
+                        const blob = new Blob(this.recordedChunks, { type: 'video/mp4' });
+                        const url = URL.createObjectURL(blob);
+                        
+                        const playbackVideo = document.getElementById('playbackVideo');
+                        playbackVideo.src = url;
+                        playbackVideo.style.display = 'block';
+                        video.style.display = 'none';
+                        
+                        document.getElementById('analyzeRecordBtn').disabled = false;
+                    };
+                    
+                    this.mediaRecorder.start();
+                    
+                    document.getElementById('startRecordBtn').disabled = true;
+                    document.getElementById('stopRecordBtn').disabled = false;
+                    document.getElementById('recordingIndicator').classList.add('active');
+                    
+                } catch (error) {
+                    console.error('録画開始エラー:', error);
+                    this.updateStatus('record', 'error', '録画の開始に失敗しました');
+                }
+            }
+
+            stopRecording() {
+                if (this.mediaRecorder && this.mediaRecorder.state === 'recording') {
+                    this.mediaRecorder.stop();
+                }
+                
+                document.getElementById('startRecordBtn').disabled = false;
+                document.getElementById('stopRecordBtn').disabled = true;
+                document.getElementById('recordingIndicator').classList.remove('active');
+                
+                this.updateStatus('record', 'success', '録画完了。AI分析を開始できます。');
+            }
+
+            async analyzeRecordedVideo() {
+                const video = document.getElementById('playbackVideo');
+                const exerciseType = document.getElementById('recordExerciseType').value;
+                
+                this.updateStatus('record', 'loading', '録画された動画を分析中...');
+                
+                try {
+                    const analysisResults = [];
+                    const totalDuration = video.duration;
+                    const sampleInterval = 1; // より詳細な分析のため1秒間隔
+                    
+                    for (let time = 0; time < totalDuration; time += sampleInterval) {
+                        video.currentTime = time;
+                        
+                        await new Promise(resolve => {
+                            video.addEventListener('seeked', resolve, { once: true });
+                        });
+                        
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                        
+                        const poses = await this.detector.estimatePoses(video);
+                        
+                        if (poses.length > 0) {
+                            const analysis = this.analyzePose(poses[0], exerciseType);
+                            analysisResults.push(analysis);
+                        }
+                    }
+                    
+                    this.displayVideoAnalysisResults(analysisResults, 'record');
+                    
+                } catch (error) {
+                    console.error('録画分析エラー:', error);
+                    this.updateStatus('record', 'error', '録画分析に失敗しました');
+                }
+            }
+
+            async startLiveAnalysis() {
+                const video = document.getElementById('liveVideo');
+                const exerciseType = document.getElementById('liveExerciseType').value;
+                
+                if (!video.srcObject) {
+                    await this.initializeCamera('liveVideo');
+                    return;
+                }
+                
+                this.analysisHistory = [];
+                
+                document.getElementById('startLiveBtn').disabled = true;
+                document.getElementById('stopLiveBtn').disabled = false;
+                
+                this.analysisInterval = setInterval(async () => {
+                    try {
+                        const poses = await this.detector.estimatePoses(video);
+                        
+                        if (poses.length > 0) {
+                            const analysis = this.analyzePose(poses[0], exerciseType);
+                            this.analysisHistory.push(analysis);
+                            this.displayLiveAnalysis(analysis);
+                            this.drawPose(poses[0], 'liveCanvas');
+                        }
+                    } catch (error) {
+                        console.error('ライブ分析エラー:', error);
+                    }
+                }, 1000); // 1秒間隔
+            }
+
+            stopLiveAnalysis() {
+                if (this.analysisInterval) {
+                    clearInterval(this.analysisInterval);
+                    this.analysisInterval = null;
+                }
+                
+                document.getElementById('startLiveBtn').disabled = false;
+                document.getElementById('stopLiveBtn').disabled = true;
+                
+                this.displaySessionSummary('live');
+            }
+
+            analyzePose(pose, exerciseType) {
+                const keypoints = pose.keypoints;
+                const analysis = {
+                    timestamp: Date.now(),
+                    exerciseType: exerciseType,
+                    kneeInScore: 0,
+                    toeOutScore: 0,
+                    overallScore: 0,
+                    alignment: {},
+                    feedback: {}
+                };
+
+                // 主要な関節点を取得
+                const leftKnee = keypoints.find(kp => kp.name === 'left_knee');
+                const rightKnee = keypoints.find(kp => kp.name === 'right_knee');
+                const leftAnkle = keypoints.find(kp => kp.name === 'left_ankle');
+                const rightAnkle = keypoints.find(kp => kp.name === 'right_ankle');
+                const leftHip = keypoints.find(kp => kp.name === 'left_hip');
+                const rightHip = keypoints.find(kp => kp.name === 'right_hip');
+
+                if (this.areKeypointsValid([leftKnee, rightKnee, leftAnkle, rightAnkle, leftHip, rightHip])) {
+                    // 実際の姿勢分析
+                    const kneeWidth = Math.abs(rightKnee.x - leftKnee.x);
+                    const ankleWidth = Math.abs(rightAnkle.x - leftAnkle.x);
+                    const hipWidth = Math.abs(rightHip.x - leftHip.x);
+                    
+                    // Knee-in評価
+                    const kneeAnkleRatio = kneeWidth / ankleWidth;
+                    let kneeInScore = 100;
+                    
+                    if (kneeAnkleRatio < 0.6) {
+                        kneeInScore = 30; // 膝が大きく内側
+                    } else if (kneeAnkleRatio < 0.8) {
+                        kneeInScore = 60; // 膝がやや内側
+                    } else if (kneeAnkleRatio > 1.3) {
+                        kneeInScore = 70; // 膝が外側すぎ
+                    }
+                    
+                    // 個別膝評価
+                    const leftKneeAnkleDistance = Math.abs(leftKnee.x - leftAnkle.x);
+                    const rightKneeAnkleDistance = Math.abs(rightKnee.x - rightAnkle.x);
+                    
+                    const leftAlignment = this.evaluateAlignment(leftKneeAnkleDistance);
+                    const rightAlignment = this.evaluateAlignment(rightKneeAnkleDistance);
+                    
+                    // 運動種目別の特別評価
+                    let toeOutScore = 85;
+                    if (exerciseType === 'squat') {
+                        // スクワットでは膝の深さも考慮
+                        const kneeHipDistance = Math.abs(leftKnee.y - leftHip.y);
+                        if (kneeHipDistance < 50) {
+                            toeOutScore -= 10; // 浅すぎる
+                        }
+                    }
+                    
+                    const alignmentScore = (this.getAlignmentScore(leftAlignment) + this.getAlignmentScore(rightAlignment)) / 2;
+                    const overallScore = (kneeInScore * 0.5) + (toeOutScore * 0.3) + (alignmentScore * 100 * 0.2);
+                    
+                    analysis.kneeInScore = Math.round(kneeInScore);
+                    analysis.toeOutScore = Math.round(toeOutScore);
+                    analysis.overallScore = Math.round(overallScore);
+                    analysis.alignment = {
+                        leftKneeAlignment: leftAlignment,
+                        rightKneeAlignment: rightAlignment,
+                        kneeWidth: Math.round(kneeWidth),
+                        ankleWidth: Math.round(ankleWidth),
+                        kneeAnkleRatio: Math.round(kneeAnkleRatio * 100) / 100
+                    };
+                } else {
+                    // キーポイント不足時のダミー値
+                    analysis.kneeInScore = 50;
+                    analysis.toeOutScore = 50;
+                    analysis.overallScore = 50;
+                    analysis.alignment = {
+                        leftKneeAlignment: 'unknown',
+                        rightKneeAlignment: 'unknown',
+                        kneeWidth: 0,
+                        ankleWidth: 0,
+                        kneeAnkleRatio: 1
+                    };
+                }
+                
+                analysis.feedback = this.generateFeedback(analysis);
+                return analysis;
+            }
+
+            areKeypointsValid(keypoints) {
+                return keypoints.every(kp => kp && kp.score > 0.5);
+            }
+
+            evaluateAlignment(distance) {
+                if (distance < 30) return 'good';
+                if (distance < 60) return 'moderate';
+                return 'poor';
+            }
+
+            getAlignmentScore(alignment) {
+                switch (alignment) {
+                    case 'good': return 1.0;
+                    case 'moderate': return 0.6;
+                    case 'poor': return 0.2;
+                    default: return 0.5;
+                }
+            }
+
+            generateFeedback(analysis) {
+                const overallScore = analysis.overallScore;
+                const feedback = {
+                    level: 'good',
+                    message: '',
+                    suggestions: []
+                };
+
+                if (overallScore >= 80) {
+                    feedback.level = 'good';
+                    feedback.message = '素晴らしいフォームです！';
+                    feedback.suggestions = ['このフォームを維持してください'];
+                } else if (overallScore >= 60) {
+                    feedback.level = 'moderate';
+                    feedback.message = '概ね良好ですが、改善の余地があります。';
+                    
+                    if (analysis.kneeInScore < 70) {
+                        feedback.suggestions.push('膝が内側に入りすぎています');
+                    }
+                    if (analysis.alignment.kneeAnkleRatio < 0.8) {
+                        feedback.suggestions.push('膝をつま先の方向に向けましょう');
+                    }
+                } else {
+                    feedback.level = 'poor';
+                    feedback.message = 'フォームに問題があります。';
+                    feedback.suggestions = [
+                        '膝の位置を修正してください',
+                        '動作をゆっくり行い、正しいフォームを意識してください'
+                    ];
+                }
+
+                return feedback;
+            }
+
+            drawPose(pose, canvasId) {
+                const canvas = document.getElementById(canvasId);
+                const ctx = canvas.getContext('2d');
+                const keypoints = pose.keypoints;
+                
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                // キーポイントを描画
+                keypoints.forEach(keypoint => {
+                    if (keypoint.score > 0.3) {
+                        ctx.beginPath();
+                        ctx.arc(keypoint.x, keypoint.y, 4, 0, 2 * Math.PI);
+                        ctx.fillStyle = keypoint.score > 0.6 ? '#00FF00' : '#FFFF00';
+                        ctx.fill();
+                    }
+                });
+                
+                // 骨格を描画
+                this.drawSkeleton(ctx, keypoints);
+            }
+
+            drawSkeleton(ctx, keypoints) {
+                const connections = [
+                    ['left_shoulder', 'right_shoulder'],
+                    ['left_shoulder', 'left_elbow'],
+                    ['left_elbow', 'left_wrist'],
+                    ['right_shoulder', 'right_elbow'],
+                    ['right_elbow', 'right_wrist'],
+                    ['left_shoulder', 'left_hip'],
+                    ['right_shoulder', 'right_hip'],
+                    ['left_hip', 'right_hip'],
+                    ['left_hip', 'left_knee'],
+                    ['left_knee', 'left_ankle'],
+                    ['right_hip', 'right_knee'],
+                    ['right_knee', 'right_ankle']
+                ];
+                
+                connections.forEach(([startName, endName]) => {
+                    const start = keypoints.find(kp => kp.name === startName);
+                    const end = keypoints.find(kp => kp.name === endName);
+                    
+                    if (start && end && start.score > 0.3 && end.score > 0.3) {
+                        ctx.beginPath();
+                        ctx.moveTo(start.x, start.y);
+                        ctx.lineTo(end.x, end.y);
+                        ctx.strokeStyle = '#00FFFF';
+                        ctx.lineWidth = 2;
+                        ctx.stroke();
+                    }
+                });
+            }
+
+            displayVideoAnalysisResults(results, tabType) {
+                if (results.length === 0) {
+                    this.updateStatus(tabType, 'error', '分析可能なフレームが見つかりませんでした');
+                    return;
+                }
+                
+                const avgKneeScore = results.reduce((sum, r) => sum + r.kneeInScore, 0) / results.length;
+                const avgToeScore = results.reduce((sum, r) => sum + r.toeOutScore, 0) / results.length;
+                const avgOverallScore = results.reduce((sum, r) => sum + r.overallScore, 0) / results.length;
+                const issueCount = results.filter(r => r.overallScore < 60).length;
+                
+                const resultsDiv = document.getElementById(`${tabType}AnalysisResults`);
+                resultsDiv.innerHTML = `
+                    <div class="analysis-card">
+                        <h3>📊 動画分析結果</h3>
+                        <div class="score-display">
+                            <div class="score-circle ${this.getScoreClass(avgKneeScore)}">
+                                ${Math.round(avgKneeScore)}
+                                <div style="font-size: 10px;">膝</div>
+                            </div>
+                            <div class="score-circle ${this.getScoreClass(avgToeScore)}">
+                                ${Math.round(avgToeScore)}
+                                <div style="font-size: 10px;">足首</div>
+                            </div>
+                            <div class="score-circle ${this.getScoreClass(avgOverallScore)}">
+                                ${Math.round(avgOverallScore)}
+                                <div style="font-size: 10px;">総合</div>
+                            </div>
+                        </div>
+                        
+                        <div style="text-align: center; margin: 15px 0;">
+                            <p><strong>分析フレーム数:</strong> ${results.length}</p>
+                            <p><strong>問題検出:</strong> ${issueCount}回 (${Math.round(issueCount/results.length*100)}%)</p>
+                        </div>
+                        
+                        <div class="feedback-section">
+                            <div class="feedback-level feedback-${avgOverallScore >= 80 ? 'good' : avgOverallScore >= 60 ? 'moderate' : 'poor'}">
+                                ${avgOverallScore >= 80 ? '優秀な動作パフォーマンスです！' : 
+                                  avgOverallScore >= 60 ? '良好ですが、さらなる改善が可能です。' : 
+                                  '動作フォームの改善が必要です。'}
+                            </div>
+                            
+                            <h4>詳細分析:</h4>
+                            <ul class="suggestions">
+                                ${avgKneeScore < 70 ? '<li>膝の内側への傾きが検出されました</li>' : ''}
+                                ${issueCount > results.length * 0.3 ? '<li>動作の一貫性を改善しましょう</li>' : ''}
+                                ${avgOverallScore >= 80 ? '<li>現在のフォームを維持してください</li>' : '<li>理学療法士と運動フォームを確認することをお勧めします</li>'}
+                            </ul>
+                        </div>
+                    </div>
+                `;
+            }
+
+            displayLiveAnalysis(analysis) {
+                const resultsDiv = document.getElementById('liveAnalysisResults');
+                resultsDiv.innerHTML = `
+                    <div class="analysis-card">
+                        <h3>🔴 リアルタイム分析</h3>
+                        <div class="score-display">
+                            <div class="score-circle ${this.getScoreClass(analysis.kneeInScore)}">
+                                ${analysis.kneeInScore}
+                                <div style="font-size: 10px;">膝</div>
+                            </div>
+                            <div class="score-circle ${this.getScoreClass(analysis.toeOutScore)}">
+                                ${analysis.toeOutScore}
+                                <div style="font-size: 10px;">足首</div>
+                            </div>
+                            <div class="score-circle ${this.getScoreClass(analysis.overallScore)}">
+                                ${analysis.overallScore}
+                                <div style="font-size: 10px;">総合</div>
+                            </div>
+                        </div>
+                        
+                        <div class="feedback-section">
+                            <div class="feedback-level feedback-${analysis.feedback.level}">
+                                ${analysis.feedback.message}
+                            </div>
+                            
+                            ${analysis.feedback.suggestions.length > 0 ? `
+                                <h4>改善提案:</h4>
+                                <ul class="suggestions">
+                                    ${analysis.feedback.suggestions.map(s => `<li>${s}</li>`).join('')}
+                                </ul>
+                            ` : ''}
+                        </div>
+                        
+                        <div class="video-info">
+                            分析履歴: ${this.analysisHistory.length}フレーム
+                        </div>
+                    </div>
+                `;
+            }
+
+            displaySessionSummary(tabType) {
+                if (this.analysisHistory.length === 0) return;
+                
+                const avgScore = this.analysisHistory.reduce((sum, a) => sum + a.overallScore, 0) / this.analysisHistory.length;
+                this.displayVideoAnalysisResults(this.analysisHistory, tabType);
+            }
+
+            getScoreClass(score) {
+                if (score >= 80) return 'score-good';
+                if (score >= 60) return 'score-moderate';
+                return 'score-poor';
+            }
+
+            updateStatus(tabType, statusType, message) {
+                const resultsDiv = document.getElementById(`${tabType}AnalysisResults`);
+                if (message) {
+                    resultsDiv.innerHTML = `<div class="status ${statusType}">${message}</div>`;
+                }
+            }
+
+            resetUpload() {
+                document.getElementById('uploadedVideo').style.display = 'none';
+                document.getElementById('uploadArea').style.display = 'block';
+                document.getElementById('uploadControls').style.display = 'none';
+                document.getElementById('uploadProgress').style.width = '0%';
+                this.updateStatus('upload', '', '動画をアップロードしてAI分析を開始してください');
+            }
+
+            resetRecord() {
+                const recordVideo = document.getElementById('recordVideo');
+                const playbackVideo = document.getElementById('playbackVideo');
+                
+                if (recordVideo.srcObject) {
+                    recordVideo.srcObject.getTracks().forEach(track => track.stop());
+                }
+                
+                recordVideo.style.display = 'none';
+                playbackVideo.style.display = 'none';
+                document.getElementById('analyzeRecordBtn').disabled = true;
+                document.getElementById('startRecordBtn').disabled = false;
+                this.updateStatus('record', '', 'カメラを起動して運動を録画してください');
+            }
+
+            resetLive() {
+                this.stopLiveAnalysis();
+                
+                const canvas = document.getElementById('liveCanvas');
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                this.analysisHistory = [];
+                this.updateStatus('live', '', 'カメラを起動してリアルタイム分析を開始してください');
+            }
+        }
+
+        // グローバル関数
+        function switchTab(tabName) {
+            window.videoAnalysis.switchTab(tabName);
+        }
+
+        // システム初期化
+        window.addEventListener('load', () => {
+            window.videoAnalysis = new VideoAIAnalysis();
+        });
+    </script>
+</body>
+</html>

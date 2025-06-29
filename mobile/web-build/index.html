@@ -117,6 +117,14 @@
                 <button onclick="loadPhaseExercises('phase_3_3')" class="phase-btn active">機能訓練期</button>
                 <button onclick="loadPhaseExercises('phase_3_4')" class="phase-btn">競技復帰期</button>
             </div>
+            <div style="margin-top: 15px; text-align: center;">
+                <a href="ai-motion-analysis.html" style="background: #FF6B35; color: white; padding: 12px 24px; border-radius: 25px; text-decoration: none; font-weight: bold; display: inline-block; transition: all 0.3s ease; margin: 5px;">
+                    🤖 AI動作分析を試す
+                </a>
+                <a href="ai-video-analysis.html" style="background: #4CAF50; color: white; padding: 12px 24px; border-radius: 25px; text-decoration: none; font-weight: bold; display: inline-block; transition: all 0.3s ease; margin: 5px;">
+                    🎥 動画AI分析（新機能）
+                </a>
+            </div>
         </div>
         <div class="current-phase" id="currentPhase">機能訓練期の運動メニュー</div>
         <div class="exercise-list" id="exerciseList">
@@ -151,7 +159,7 @@
             try {
                 document.getElementById('exerciseList').innerHTML = '<div class="loading">運動データを読み込み中...</div>';
                 
-                const response = await fetch(`http://localhost:3000/api/exercises/public/phase/${phase}`);
+                const response = await fetch(`http://192.168.3.186:3000/api/exercises/public/phase/${phase}`);
                 if (!response.ok) {
                     throw new Error(`API error: ${response.status}`);
                 }
