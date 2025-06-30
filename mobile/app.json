@@ -12,13 +12,29 @@
     "assetBundlePatterns": [
       "**/*"
     ],
+    "permissions": [
+      "CAMERA",
+      "RECORD_AUDIO",
+      "WRITE_EXTERNAL_STORAGE"
+    ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "このアプリは運動フォームの分析のためにカメラを使用します",
+        "NSMicrophoneUsageDescription": "このアプリは運動分析の動画撮影時にマイクを使用します",
+        "NSPhotoLibraryUsageDescription": "このアプリは撮影した動画を保存するためにフォトライブラリにアクセスします"
+      }
     },
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#ffffff"
-      }
+      },
+      "permissions": [
+        "CAMERA",
+        "RECORD_AUDIO",
+        "WRITE_EXTERNAL_STORAGE",
+        "READ_EXTERNAL_STORAGE"
+      ]
     },
     "web": {},
     "extra": {

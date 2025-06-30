@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ACL リハビリアプリ - カメラ機能デモ</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            color: #333;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0 0 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2E7D32 0%, #4CAF50 100%);
+            padding: 20px;
+            color: white;
+            text-align: center;
+        }
+        
+        .camera-container {
+            position: relative;
+            background: #000;
+            height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .camera-placeholder {
+            color: #666;
+            text-align: center;
+            background: #f0f0f0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .camera-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+        
+        .camera-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(transparent 0%, transparent 50%, rgba(0,0,0,0.3) 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 16px;
+        }
+        
+        .camera-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .exercise-chip {
+            background: rgba(255,255,255,0.9);
+            color: #2E7D32;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .flip-button {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 20px;
+            font-size: 18px;
+            cursor: pointer;
+        }
+        
+        .recording-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: rgba(244, 67, 54, 0.9);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            align-self: center;
+            margin: 16px 0;
+        }
+        
+        .recording-dot {
+            width: 8px;
+            height: 8px;
+            background: white;
+            border-radius: 50%;
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .camera-controls {
+            display: flex;
+            justify-content: center;
+        }
+        
+        .control-button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .control-button:hover {
+            background: #45a049;
+            transform: translateY(-1px);
+        }
+        
+        .control-button.stop {
+            background: #F44336;
+        }
+        
+        .control-button.stop:hover {
+            background: #d32f2f;
+        }
+        
+        .control-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .analysis-container {
+            padding: 20px;
+        }
+        
+        .analysis-card {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .analysis-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #2E7D32;
+        }
+        
+        .score-display {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+        
+        .score-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #4CAF50;
+        }
+        
+        .score-label {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .feedback-list {
+            list-style: none;
+        }
+        
+        .feedback-item {
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .feedback-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: white;
+        }
+        
+        .feedback-icon.good {
+            background: #4CAF50;
+        }
+        
+        .feedback-icon.warning {
+            background: #FF9800;
+        }
+        
+        .feedback-icon.error {
+            background: #F44336;
+        }
+        
+        .permission-notice {
+            background: #FFF3E0;
+            border: 1px solid #FFB74D;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 16px;
+            text-align: center;
+        }
+        
+        .permission-title {
+            color: #E65100;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .permission-text {
+            color: #BF360C;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- ヘッダー -->
+        <div class="header">
+            <h1>AI動作分析</h1>
+            <p>運動フォームの分析</p>
+        </div>
+        
+        <!-- カメラエリア -->
+        <div class="camera-container">
+            <div class="camera-placeholder">
+                <div class="camera-icon">📹</div>
+                <p>カメラプレビュー</p>
+                <p style="font-size: 12px; margin-top: 8px; color: #888;">
+                    実際のアプリではここにカメラ映像が表示されます
+                </p>
+            </div>
+            
+            <div class="camera-overlay">
+                <div class="camera-header">
+                    <div class="exercise-chip">スクワット分析</div>
+                    <button class="flip-button" onclick="toggleCamera()">🔄</button>
+                </div>
+                
+                <div id="recording-indicator" class="recording-indicator" style="display: none;">
+                    <div class="recording-dot"></div>
+                    <span>AI分析中</span>
+                </div>
+                
+                <div class="camera-controls">
+                    <button id="control-button" class="control-button" onclick="toggleAnalysis()">
+                        分析開始
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 権限に関する注意 -->
+        <div class="permission-notice">
+            <div class="permission-title">⚠️ カメラ権限について</div>
+            <div class="permission-text">
+                実際のアプリではカメラアクセス権限が必要です。<br>
+                「設定」→「プライバシー」→「カメラ」で権限を許可してください。
+            </div>
+        </div>
+        
+        <!-- 分析結果エリア -->
+        <div class="analysis-container">
+            <div id="analysis-result" class="analysis-card" style="display: none;">
+                <div class="analysis-title">📊 リアルタイム分析結果</div>
+                
+                <div class="score-display">
+                    <div>
+                        <div id="score-value" class="score-value">85</div>
+                        <div class="score-label">総合スコア</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-size: 16px; font-weight: 600; color: #4CAF50;">良好</div>
+                        <div class="score-label">フォーム評価</div>
+                    </div>
+                </div>
+                
+                <ul class="feedback-list">
+                    <li class="feedback-item">
+                        <div class="feedback-icon good">✓</div>
+                        <span>膝の位置が適切です</span>
+                    </li>
+                    <li class="feedback-item">
+                        <div class="feedback-icon good">✓</div>
+                        <span>背筋が真っ直ぐ保たれています</span>
+                    </li>
+                    <li class="feedback-item">
+                        <div class="feedback-icon warning">!</div>
+                        <span>しゃがみの深さをもう少し深くしましょう</span>
+                    </li>
+                    <li class="feedback-item">
+                        <div class="feedback-icon good">✓</div>
+                        <span>動作のスピードが適切です</span>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="analysis-card">
+                <div class="analysis-title">🎯 改善提案</div>
+                <ul class="feedback-list">
+                    <li class="feedback-item">
+                        <div class="feedback-icon warning">1</div>
+                        <span>太ももが床と平行になるまでしゃがみましょう</span>
+                    </li>
+                    <li class="feedback-item">
+                        <div class="feedback-icon good">2</div>
+                        <span>つま先と膝の向きを揃えて維持しましょう</span>
+                    </li>
+                    <li class="feedback-item">
+                        <div class="feedback-icon good">3</div>
+                        <span>呼吸を止めずに動作を行いましょう</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let isAnalyzing = false;
+        let analysisInterval;
+        
+        function toggleAnalysis() {
+            const button = document.getElementById('control-button');
+            const indicator = document.getElementById('recording-indicator');
+            const result = document.getElementById('analysis-result');
+            
+            if (!isAnalyzing) {
+                // 分析開始
+                isAnalyzing = true;
+                button.textContent = '分析停止';
+                button.classList.add('stop');
+                indicator.style.display = 'flex';
+                result.style.display = 'block';
+                
+                // ダミーの分析データ更新
+                analysisInterval = setInterval(updateAnalysisData, 2000);
+                
+            } else {
+                // 分析停止
+                isAnalyzing = false;
+                button.textContent = '分析開始';
+                button.classList.remove('stop');
+                indicator.style.display = 'none';
+                
+                clearInterval(analysisInterval);
+                
+                // 分析完了通知
+                setTimeout(() => {
+                    alert('AI分析が完了しました！\\n\\n総合スコア: 85点\\n改善提案: 3件\\n\\n詳細は分析結果をご確認ください。');
+                }, 500);
+            }
+        }
+        
+        function updateAnalysisData() {
+            const scoreValue = document.getElementById('score-value');
+            const scores = [82, 85, 87, 83, 86, 84, 88, 81];
+            const randomScore = scores[Math.floor(Math.random() * scores.length)];
+            scoreValue.textContent = randomScore;
+            
+            // スコアに応じて色を変更
+            if (randomScore >= 85) {
+                scoreValue.style.color = '#4CAF50';
+            } else if (randomScore >= 75) {
+                scoreValue.style.color = '#FF9800';
+            } else {
+                scoreValue.style.color = '#F44336';
+            }
+        }
+        
+        function toggleCamera() {
+            alert('カメラを切り替えました\\n（前面カメラ ⇄ 背面カメラ）');
+        }
+        
+        // 初期化
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('ACL リハビリアプリ - カメラ機能デモ loaded');
+        });
+    </script>
+</body>
+</html>

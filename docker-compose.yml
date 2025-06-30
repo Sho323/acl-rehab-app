@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  acl-app:
+    build: .
+    container_name: acl-self-training-app
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - FILE_RETENTION_HOURS=24
+      - ANALYSIS_RETENTION_DAYS=7
+      - LOG_LEVEL=info
+    volumes:
+      # 永続化：アップロードとログファイル
+      - uploads_data:/app/uploads
+      - logs_data:/app/logs
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  uploads_data:
+    driver: local
+  logs_data:
+    driver: local
+
+networks:
+  default:
+    name: acl-app-network
+EOF < /dev/null

@@ -16,28 +16,20 @@ app.use(express.json({
 app.use(express.urlencoded({ extended: true }));
 
 // Routes
-const authRoutes = require('./routes/auth');
 const exerciseRoutes = require('./routes/exercises');
-const progressRoutes = require('./routes/progress');
 const videosRoutes = require('./routes/videos');
-const aiAnalysisRoutes = require('./routes/ai-analysis');
-const medicalCollaborationRoutes = require('./routes/medical-collaboration');
-const patientsRoutes = require('./routes/patients');
 
 app.get('/', (req, res) => {
   res.status(200).json({
-    name: 'ACL Rehabilitation App API',
-    version: '1.0.0',
+    name: 'ACL Rehabilitation Self-Training App',
+    version: '2.0.0',
     status: 'OK',
-    message: 'Welcome to ACL Rehab App Server',
+    message: 'Welcome to ACL Self-Training App',
     endpoints: {
       health: '/health',
-      auth: '/auth/*',
-      patient: '/api/patient/*',
       exercises: '/api/exercises/*',
-      progress: '/api/patient/progress/*',
-      ai: '/api/ai/*',
-      medical: '/api/medical-collaboration/*'
+      videos: '/api/videos/*',
+      ai: '/api/ai/*'
     },
     timestamp: new Date().toISOString()
   });
@@ -46,19 +38,14 @@ app.get('/', (req, res) => {
 app.get('/health', (req, res) => {
   res.status(200).json({
     status: 'OK',
-    message: 'ACL Rehab App Server is running',
+    message: 'ACL Self-Training App Server is running',
     timestamp: new Date().toISOString()
   });
 });
 
 // API Routes
-app.use('/auth', authRoutes);
 app.use('/api/exercises', exerciseRoutes);
-app.use('/api/patient/progress', progressRoutes);
 app.use('/api/videos', videosRoutes);
-app.use('/api/ai', aiAnalysisRoutes);
-app.use('/api/medical-collaboration', medicalCollaborationRoutes);
-app.use('/api/patient', patientsRoutes);
 
 // 404 handler
 app.use('*', (req, res) => {
@@ -101,7 +88,7 @@ app.use((err, req, res, next) => {
 // Only start the server if not in Vercel environment
 if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
   app.listen(PORT, () => {
-    logger.info(`ACL Rehab App server running on port ${PORT}`);
+    logger.info(`ACL Self-Training App server running on port ${PORT}`);
     logger.info(`Environment: ${process.env.NODE_ENV || 'development'}`);
   });
 }

@@ -15,16 +15,16 @@ import {
   Divider,
   IconButton,
 } from 'react-native-paper';
-// import { Camera } from 'expo-camera';
-// import * as MediaLibrary from 'expo-media-library';
+import { Camera } from 'expo-camera';
+import * as MediaLibrary from 'expo-media-library';
 import AIAnalysisDisplay from '../components/AIAnalysisDisplay';
-// import aiAnalysisService from '../services/aiAnalysis';
+import aiAnalysisService from '../services/aiAnalysis';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
 const AIAnalysisScreen = ({ navigation, route }) => {
   const [hasPermission, setHasPermission] = useState(null);
-  const [cameraType, setCameraType] = useState(Camera.Constants.Type.front);
+  const [cameraType, setCameraType] = useState('front');
   const [isRecording, setIsRecording] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [currentAnalysis, setCurrentAnalysis] = useState(null);
@@ -40,21 +40,40 @@ const AIAnalysisScreen = ({ navigation, route }) => {
 
   useEffect(() => {
     (async () => {
-      // カメラ権限の取得
-      const cameraStatus = await Camera.requestCameraPermissionsAsync();
-      const mediaLibraryStatus = await MediaLibrary.requestPermissionsAsync();
-      
-      setHasPermission(
-        cameraStatus.status === 'granted' && mediaLibraryStatus.status === 'granted'
-      );
-
-      // AI分析サービス初期化
       try {
+        // カメラ権限の取得
+        console.log('カメラ権限を要求中...');
+        const cameraStatus = await Camera.requestCameraPermissionsAsync();
+        console.log('カメラ権限ステータス:', cameraStatus);
+        
+        const mediaLibraryStatus = await MediaLibrary.requestPermissionsAsync();
+        console.log('メディアライブラリ権限ステータス:', mediaLibraryStatus);
+        
+        const hasAllPermissions = cameraStatus.status === 'granted' && mediaLibraryStatus.status === 'granted';
+        setHasPermission(hasAllPermissions);
+        
+        if (!hasAllPermissions) {
+          Alert.alert(
+            '権限エラー', 
+            'カメラとメディアライブラリへのアクセス権限が必要です。設定で権限を許可してください。',
+            [
+              { text: 'OK', onPress: () => navigation.goBack() }
+            ]
+          );
+          return;
+        }
+
+        // AI分析サービス初期化
+        console.log('AI分析サービスを初期化中...');
         const initialized = await aiAnalysisService.initializeModel();
         setIsInitialized(initialized);
+        console.log('AI分析サービス初期化完了:', initialized);
+        
       } catch (error) {
-        console.error('AI分析サービス初期化エラー:', error);
+        console.error('初期化エラー:', error);
+        Alert.alert('エラー', 'アプリの初期化に失敗しました: ' + error.message);
         setIsInitialized(false);
+        setHasPermission(false);
       }
     })();
 
@@ -64,7 +83,7 @@ const AIAnalysisScreen = ({ navigation, route }) => {
         clearInterval(analysisIntervalRef.current);
       }
     };
-  }, []);
+  }, [navigation]);
 
   const startAnalysis = async () => {
     if (!cameraRef.current || !isInitialized) {
@@ -119,9 +138,9 @@ const AIAnalysisScreen = ({ navigation, route }) => {
 
   const toggleCameraType = () => {
     setCameraType(
-      cameraType === Camera.Constants.Type.back
-        ? Camera.Constants.Type.front
-        : Camera.Constants.Type.back
+      cameraType === 'back'
+        ? 'front'
+        : 'back'
     );
   };
 
@@ -178,7 +197,7 @@ const AIAnalysisScreen = ({ navigation, route }) => {
         <Camera
           ref={cameraRef}
           style={styles.camera}
-          type={cameraType}
+          facing={cameraType}
           ratio="16:9"
         >
           {/* カメラオーバーレイ */}

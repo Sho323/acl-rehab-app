@@ -1,220 +1,238 @@
-<!DOCTYPE html>
+<\!DOCTYPE html>
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ACL Rehab App - 機能訓練期テスト</title>
+    <title>ACL 自主トレーニングアプリ</title>
+    <meta name="description" content="ACL（前十字靱帯）損傷患者向けの自主トレーニングアプリケーション">
+    <meta name="keywords" content="ACL,リハビリ,自主トレ,前十字靱帯,理学療法">
+    
+    <\!-- PWA設定 -->
+    <meta name="theme-color" content="#2196F3">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="ACL自主トレ">
+    
+    <\!-- セキュリティヘッダー -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self';">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+    
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        * {
             margin: 0;
-            padding: 20px;
-            background-color: #f5f5f5;
+            padding: 0;
+            box-sizing: border-box;
         }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
         .container {
             max-width: 800px;
             margin: 0 auto;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
             padding: 20px;
-            text-align: center;
-        }
-        .exercise-list {
-            padding: 20px;
-        }
-        .exercise-item {
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            padding: 15px;
-            background: #fafafa;
-        }
-        .exercise-name {
-            font-size: 18px;
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 10px;
-        }
-        .exercise-description {
-            color: #666;
-            margin-bottom: 10px;
-        }
-        .exercise-instructions {
-            background: white;
-            padding: 15px;
-            border-radius: 5px;
-            white-space: pre-line;
-            line-height: 1.6;
-        }
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: #666;
-        }
-        .error {
-            color: #d32f2f;
-            text-align: center;
-            padding: 20px;
-        }
-        .category-header {
-            background: #e3f2fd;
-            padding: 10px 15px;
-            margin: 20px -20px 15px -20px;
-            font-weight: bold;
-            color: #1976d2;
-            border-left: 4px solid #2196f3;
-        }
-        .phase-selector {
-            margin-top: 15px;
+            flex: 1;
             display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
+            flex-direction: column;
             justify-content: center;
         }
-        .phase-btn {
-            background: white;
-            border: 2px solid #667eea;
-            color: #667eea;
-            padding: 8px 16px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.3s ease;
-        }
-        .phase-btn:hover {
-            background: #667eea;
-            color: white;
-        }
-        .phase-btn.active {
-            background: #667eea;
-            color: white;
-        }
-        .current-phase {
+        
+        .app-header {
             text-align: center;
-            margin: 20px 0;
+            background: white;
+            border-radius: 20px;
+            padding: 40px 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .app-icon {
+            width: 100px;
+            height: 100px;
+            background: #2196F3;
+            border-radius: 20px;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            color: white;
+        }
+        
+        h1 {
+            color: #2196F3;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 16px;
+            margin-bottom: 30px;
+        }
+        
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .feature {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .feature-icon {
+            font-size: 40px;
+            margin-bottom: 15px;
+        }
+        
+        .feature h3 {
+            color: #2196F3;
+            margin-bottom: 10px;
             font-size: 18px;
-            font-weight: bold;
-            color: #333;
+        }
+        
+        .feature p {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .action-buttons {
+            text-align: center;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 15px 30px;
+            margin: 10px;
+            background: #2196F3;
+            color: white;
+            text-decoration: none;
+            border-radius: 30px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        .btn:hover {
+            background: #1976D2;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(33,150,243,0.3);
+        }
+        
+        .btn-secondary {
+            background: #4CAF50;
+        }
+        
+        .btn-secondary:hover {
+            background: #45a049;
+        }
+        
+        .disclaimer {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            text-align: center;
+        }
+        
+        .disclaimer h4 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+        
+        .disclaimer p {
+            color: #856404;
+            font-size: 14px;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .app-header {
+                padding: 30px 20px;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+            
+            .features {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>ACL リハビリアプリ</h1>
-            <h2>全フェーズの運動メニュー</h2>
-            <div class="phase-selector">
-                <button onclick="loadPhaseExercises('pre_surgery')" class="phase-btn">術前期</button>
-                <button onclick="loadPhaseExercises('post_surgery_early')" class="phase-btn">術直後期</button>
-                <button onclick="loadPhaseExercises('phase_3_1')" class="phase-btn">基礎回復期</button>
-                <button onclick="loadPhaseExercises('phase_3_2')" class="phase-btn">筋力強化期</button>
-                <button onclick="loadPhaseExercises('phase_3_3')" class="phase-btn active">機能訓練期</button>
-                <button onclick="loadPhaseExercises('phase_3_4')" class="phase-btn">競技復帰期</button>
+        <header class="app-header">
+            <div class="app-icon">🏥</div>
+            <h1>ACL 自主トレーニングアプリ</h1>
+            <p class="subtitle">前十字靱帯損傷患者向けの包括的リハビリテーション支援アプリ</p>
+        </header>
+        
+        <main class="features">
+            <div class="feature">
+                <div class="feature-icon">💪</div>
+                <h3>段階的エクササイズ</h3>
+                <p>術前期から競技復帰期まで、6つのフェーズに分けられた38種類の運動メニュー</p>
             </div>
-            <div style="margin-top: 15px; text-align: center;">
-                <a href="ai-motion-analysis.html" style="background: #FF6B35; color: white; padding: 12px 24px; border-radius: 25px; text-decoration: none; font-weight: bold; display: inline-block; transition: all 0.3s ease; margin: 5px;">
-                    🤖 AI動作分析を試す
-                </a>
-                <a href="ai-video-analysis.html" style="background: #4CAF50; color: white; padding: 12px 24px; border-radius: 25px; text-decoration: none; font-weight: bold; display: inline-block; transition: all 0.3s ease; margin: 5px;">
-                    🎥 動画AI分析（新機能）
-                </a>
+            
+            <div class="feature">
+                <div class="feature-icon">🤖</div>
+                <h3>AI動作分析</h3>
+                <p>スマートフォンカメラでスクワット動作を撮影し、AI がフォームを自動分析</p>
             </div>
+            
+            <div class="feature">
+                <div class="feature-icon">📱</div>
+                <h3>いつでもどこでも</h3>
+                <p>インターネット接続があれば、スマートフォンやタブレットで簡単にアクセス</p>
+            </div>
+            
+            <div class="feature">
+                <div class="feature-icon">🔒</div>
+                <h3>プライバシー保護</h3>
+                <p>個人情報の登録不要。動画は24時間後、分析結果は7日後に自動削除</p>
+            </div>
+        </main>
+        
+        <div class="action-buttons">
+            <h2 style="margin-bottom: 20px; color: #333;">アプリを開始する</h2>
+            <a href="/demo-menu.html" class="btn">デモを試す</a>
+            <a href="/exercises.html" class="btn btn-secondary">運動メニューを見る</a>
+            <br>
+            <a href="/ai-video-analysis.html" class="btn">AI動作分析を試す</a>
         </div>
-        <div class="current-phase" id="currentPhase">機能訓練期の運動メニュー</div>
-        <div class="exercise-list" id="exerciseList">
-            <div class="loading">運動データを読み込み中...</div>
+        
+        <div class="disclaimer">
+            <h4>⚠️ 重要な注意事項</h4>
+            <p>このアプリは医療機器ではありません。運動実施前に必ず医師・理学療法士にご相談ください。痛みや異常を感じた場合は直ちに運動を中止し、専門医にご相談ください。</p>
         </div>
     </div>
-
-    <script>
-        const phaseNames = {
-            'pre_surgery': '術前期',
-            'post_surgery_early': '術直後期',
-            'phase_3_1': '基礎回復期',
-            'phase_3_2': '筋力強化期',
-            'phase_3_3': '機能訓練期',
-            'phase_3_4': '競技復帰期'
-        };
-
-        let currentPhase = 'phase_3_3';
-
-        async function loadPhaseExercises(phase) {
-            currentPhase = phase;
-            
-            // ボタンのアクティブ状態を更新
-            document.querySelectorAll('.phase-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            event.target.classList.add('active');
-            
-            // フェーズ名を更新
-            document.getElementById('currentPhase').textContent = phaseNames[phase] + 'の運動メニュー';
-            
-            try {
-                document.getElementById('exerciseList').innerHTML = '<div class="loading">運動データを読み込み中...</div>';
-                
-                const response = await fetch(`http://192.168.3.186:3000/api/exercises/public/phase/${phase}`);
-                if (!response.ok) {
-                    throw new Error(`API error: ${response.status}`);
-                }
-                
-                const exercises = await response.json();
-                
-                const exerciseList = document.getElementById('exerciseList');
-                
-                if (exercises.length === 0) {
-                    exerciseList.innerHTML = `<div class="error">${phaseNames[phase]}の運動データが見つかりませんでした。</div>`;
-                    return;
-                }
-                
-                // カテゴリ別にグループ化
-                const groupedExercises = exercises.reduce((acc, exercise) => {
-                    const category = exercise.category_name || 'その他';
-                    if (!acc[category]) {
-                        acc[category] = [];
-                    }
-                    acc[category].push(exercise);
-                    return acc;
-                }, {});
-                
-                let html = '';
-                
-                Object.entries(groupedExercises).forEach(([category, categoryExercises]) => {
-                    html += `<div class="category-header">${category}</div>`;
-                    
-                    categoryExercises.forEach(exercise => {
-                        html += `
-                            <div class="exercise-item">
-                                <div class="exercise-name">${exercise.name}</div>
-                                <div class="exercise-description">${exercise.description}</div>
-                                <div class="exercise-instructions">${exercise.instructions || '詳細な実施方法はありません'}</div>
-                            </div>
-                        `;
-                    });
-                });
-                
-                exerciseList.innerHTML = html;
-                
-            } catch (error) {
-                console.error('Error loading exercises:', error);
-                document.getElementById('exerciseList').innerHTML = 
-                    `<div class="error">運動データの読み込みに失敗しました: ${error.message}</div>`;
-            }
-        }
-
-        async function loadExercises() {
-            // 初期表示は機能訓練期
-            await loadPhaseExercises('phase_3_3');
-        }
-        
-        // ページ読み込み時に実行
-        loadExercises();
-    </script>
 </body>
 </html>
+EOF < /dev/null
