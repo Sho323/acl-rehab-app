@@ -11,7 +11,6 @@ import HomeScreen from './src/screens/HomeScreen';
 import ExerciseScreen from './src/screens/ExerciseScreen';
 import ExerciseMenuScreen from './src/screens/ExerciseMenuScreen';
 import ExerciseSessionScreen from './src/screens/ExerciseSessionScreen';
-import AIAnalysisScreen from './src/screens/AIAnalysisScreen';
 import ProgressScreen from './src/screens/ProgressScreen';
 import ReturnToSportScreen from './src/screens/ReturnToSportScreen';
 import RunningCriteriaScreen from './src/screens/RunningCriteriaScreen';
@@ -59,11 +58,6 @@ export default function App() {
               name="ExerciseSession" 
               component={ExerciseSessionScreen}
               options={{ title: 'トレーニング実行' }}
-            />
-            <Stack.Screen 
-              name="AIAnalysis" 
-              component={AIAnalysisScreen}
-              options={{ title: 'AI動作分析' }}
             />
             <Stack.Screen 
               name="Progress" 
