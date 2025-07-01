@@ -913,14 +913,40 @@ const ExerciseMenuScreen = ({ navigation }) => {
     );
   };
 
-  const handleExercisePress = (exercise) => {
-    Alert.alert(
-      exercise.exercise_name,
-      `詳細: ${exercise.description}\n\nセット数: ${exercise.assigned_sets}\n回数: ${exercise.assigned_reps}\n難易度: ${getDifficultyLabel(exercise.difficulty_level)}\n\n（詳細画面は今後実装予定です）`,
-      [
-        { text: 'OK' }
-      ]
-    );
+  const handleExercisePress = async (exercise) => {
+    try {
+      // 詳細な運動情報をAPIから取得
+      const { exerciseAPI } = await import('../services/api');
+      const detailedExercise = await exerciseAPI.getExerciseDetails(exercise.id);
+      
+      const instructions = detailedExercise.instructions;
+      const instructionText = instructions ? [
+        `【準備】${instructions.preparation || ''}`,
+        `【実施方法】${instructions.execution || ''}`,
+        `【コツ】${instructions.tips || ''}`,
+        `【注意点】${instructions.cautions || ''}`,
+        `【進行方法】${instructions.progression || ''}`,
+        `【効果】${instructions.effects || ''}`,
+      ].filter(text => text.length > 4).join('\n\n') : '';
+
+      Alert.alert(
+        exercise.exercise_name,
+        `${detailedExercise.description}\n\n${instructionText}\n\n【トレーニング設定】\nセット数: ${exercise.assigned_sets}\n回数: ${exercise.assigned_reps}\n難易度: ${getDifficultyLabel(exercise.difficulty_level)}\n${detailedExercise.equipment ? `器具: ${detailedExercise.equipment}` : ''}`,
+        [
+          { text: 'OK' }
+        ]
+      );
+    } catch (error) {
+      console.error('Error fetching exercise details:', error);
+      // フォールバック：基本情報のみ表示
+      Alert.alert(
+        exercise.exercise_name,
+        `詳細: ${exercise.description}\n\nセット数: ${exercise.assigned_sets}\n回数: ${exercise.assigned_reps}\n難易度: ${getDifficultyLabel(exercise.difficulty_level)}`,
+        [
+          { text: 'OK' }
+        ]
+      );
+    }
   };
 
   const toggleCategory = (categoryName) => {
