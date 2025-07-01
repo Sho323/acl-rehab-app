@@ -15,14 +15,10 @@ import {
   Divider,
   IconButton,
 } from 'react-native-paper';
-import { useSelector, useDispatch } from 'react-redux';
-import { logoutUser } from '../store/slices/authSlice';
 
 const { width } = Dimensions.get('window');
 
 const HomeScreen = ({ navigation }) => {
-  const dispatch = useDispatch();
-  const { user } = useSelector((state) => state.auth);
 
   // フェーズに応じた表示内容
   const getPhaseInfo = (phase) => {
@@ -73,12 +69,7 @@ const HomeScreen = ({ navigation }) => {
     return phaseMap[phase] || phaseMap['pre_surgery'];
   };
 
-  const currentPhaseInfo = getPhaseInfo(user?.currentPhase);
-
-  const handleLogout = () => {
-    dispatch(logoutUser());
-    navigation.replace('Login');
-  };
+  const currentPhaseInfo = getPhaseInfo('pre_surgery');
 
   const menuItems = [
     {
@@ -95,13 +86,6 @@ const HomeScreen = ({ navigation }) => {
       onPress: () => navigation.navigate('Progress'),
       color: '#1976D2',
     },
-    {
-      title: 'プロフィール',
-      icon: 'account',
-      description: '個人情報・設定',
-      onPress: () => navigation.navigate('Profile'),
-      color: '#7B1FA2',
-    },
   ];
 
   return (
@@ -111,15 +95,9 @@ const HomeScreen = ({ navigation }) => {
         <Card.Content>
           <View style={styles.headerContent}>
             <View style={styles.userInfo}>
-              <Text style={styles.welcomeText}>こんにちは</Text>
-              <Text style={styles.userName}>{user?.name}さん</Text>
+              <Text style={styles.welcomeText}>ACL リハビリアプリ</Text>
+              <Text style={styles.userName}>自主トレーニング</Text>
             </View>
-            <IconButton
-              icon="logout"
-              size={24}
-              onPress={handleLogout}
-              style={styles.logoutButton}
-            />
           </View>
         </Card.Content>
       </Card>
@@ -233,9 +211,6 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     color: '#333',
-  },
-  logoutButton: {
-    margin: 0,
   },
   phaseCard: {
     margin: 16,

@@ -7,15 +7,12 @@ import { store } from './src/store';
 import { theme } from './src/theme';
 
 // Screens
-import LoginScreen from './src/screens/LoginScreen';
 import HomeScreen from './src/screens/HomeScreen';
 import ExerciseScreen from './src/screens/ExerciseScreen';
 import ExerciseMenuScreen from './src/screens/ExerciseMenuScreen';
 import ExerciseSessionScreen from './src/screens/ExerciseSessionScreen';
 import AIAnalysisScreen from './src/screens/AIAnalysisScreen';
-import MedicalCollaborationScreen from './src/screens/MedicalCollaborationScreen';
 import ProgressScreen from './src/screens/ProgressScreen';
-import ProfileScreen from './src/screens/ProfileScreen';
 import ReturnToSportScreen from './src/screens/ReturnToSportScreen';
 import RunningCriteriaScreen from './src/screens/RunningCriteriaScreen';
 import EvaluationCheckpointsScreen from './src/screens/EvaluationCheckpointsScreen';
@@ -32,7 +29,7 @@ export default function App() {
         <PaperProvider theme={theme}>
           <NavigationContainer>
             <Stack.Navigator
-            initialRouteName="Login"
+            initialRouteName="Home"
             screenOptions={{
               headerStyle: {
                 backgroundColor: theme.colors.primary,
@@ -43,11 +40,6 @@ export default function App() {
               },
             }}
           >
-            <Stack.Screen 
-              name="Login" 
-              component={LoginScreen}
-              options={{ headerShown: false }}
-            />
             <Stack.Screen 
               name="Home" 
               component={HomeScreen}
@@ -74,19 +66,9 @@ export default function App() {
               options={{ title: 'AI動作分析' }}
             />
             <Stack.Screen 
-              name="MedicalCollaboration" 
-              component={MedicalCollaborationScreen}
-              options={{ title: '医療従事者連携' }}
-            />
-            <Stack.Screen 
               name="Progress" 
               component={ProgressScreen}
               options={{ title: '進捗確認' }}
-            />
-            <Stack.Screen 
-              name="Profile" 
-              component={ProfileScreen}
-              options={{ title: 'プロフィール' }}
             />
             <Stack.Screen 
               name="ReturnToSport" 
