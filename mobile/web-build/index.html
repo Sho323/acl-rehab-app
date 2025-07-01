@@ -14,10 +14,6 @@
     <meta name="apple-mobile-web-app-title" content="ACL自主トレ">
     
     <\!-- セキュリティヘッダー -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self';">
-    <meta http-equiv="X-Content-Type-Options" content="nosniff">
-    <meta http-equiv="X-Frame-Options" content="DENY">
-    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
     
     <style>
         * {
@@ -223,7 +219,7 @@
         <div class="action-buttons">
             <h2 style="margin-bottom: 20px; color: #333;">アプリを開始する</h2>
             <a href="/demo-menu.html" class="btn">デモを試す</a>
-            <a href="/exercises.html" class="btn btn-secondary">運動メニューを見る</a>
+            <button onclick="location.reload()" class="btn btn-secondary">運動メニューを見る</button>
             <br>
             <a href="/ai-video-analysis.html" class="btn">AI動作分析を試す</a>
         </div>
