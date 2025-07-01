@@ -41,23 +41,21 @@ const ExerciseMenuScreen = ({ navigation }) => {
   const [expandedCategories, setExpandedCategories] = useState({});
 
   useEffect(() => {
-    if (user) {
-      // ユーザーの現在のフェーズを設定
-      const userPhase = user.currentPhase || 'pre_surgery';
-      dispatch(setCurrentPhase(userPhase));
-      
-      // 常に実際のAPIから運動プランを取得
-      if (token) {
-        // 患者の運動プランを取得
-        dispatch(fetchPatientExercisePlan({
-          patientId: user.id,
-          phase: userPhase,
-          token: token
-        }));
-      } else {
-        // トークンがない場合は公開APIから運動データを取得
-        fetchPublicExerciseData(userPhase);
-      }
+    // ユーザーの現在のフェーズを設定（デフォルトは術前期）
+    const userPhase = user?.currentPhase || 'pre_surgery';
+    dispatch(setCurrentPhase(userPhase));
+    
+    // 常に実際のAPIから運動プランを取得
+    if (user && token) {
+      // 認証済みユーザーの場合：患者の運動プランを取得
+      dispatch(fetchPatientExercisePlan({
+        patientId: user.id,
+        phase: userPhase,
+        token: token
+      }));
+    } else {
+      // ゲストアクセスまたは未認証の場合：公開APIから運動データを取得
+      fetchPublicExerciseData(userPhase);
     }
   }, [dispatch, user, token]);
 
@@ -69,6 +67,8 @@ const ExerciseMenuScreen = ({ navigation }) => {
       // exerciseAPI.getExercisesByPhaseを使用してAPIからデータを取得
       const { exerciseAPI } = await import('../services/api');
       const phaseData = await exerciseAPI.getExercisesByPhase(phase);
+      
+      console.log('Fetched phase data:', phaseData); // デバッグログ
       
       if (phaseData && phaseData.exercises) {
         // データを適切なフォーマットに変換
@@ -85,8 +85,10 @@ const ExerciseMenuScreen = ({ navigation }) => {
           requires_ai_analysis: exercise.requiresAI,
           is_completed: false,
         }));
+        console.log('Converted exercise list:', exerciseList); // デバッグログ
         setLocalPatientPlan(exerciseList);
       } else {
+        console.log('No exercises in phase data, using dummy data');
         // フォールバックとしてダミーデータを使用
         const dummyPlan = getDummyExercisePlan(phase);
         setLocalPatientPlan(dummyPlan);
@@ -897,7 +899,7 @@ const ExerciseMenuScreen = ({ navigation }) => {
 
     // セッション開始
     dispatch(startLocalSession({
-      patientId: user.id,
+      patientId: user?.id || 'guest',
       phase: currentPhase,
     }));
 
