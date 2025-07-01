@@ -4,7 +4,7 @@ import Constants from 'expo-constants';
 // API基底URL（環境変数対応）
 const API_BASE_URL = Constants.expoConfig?.extra?.apiUrl || 
   (process.env.NODE_ENV === 'production' 
-    ? 'https://acl-rehab-2oz8e3lyq-shotas-projects-1f553362.vercel.app' 
+    ? 'https://acl-rehab-app-4npr.onrender.com' 
     : 'http://localhost:3000');
 
 // APIクライアントの設定
@@ -66,7 +66,22 @@ export const authAPI = {
 
 // 運動API
 export const exerciseAPI = {
-  // 運動カテゴリー一覧取得
+  // すべてのフェーズ取得（パブリック）
+  getAllPhases: async () => {
+    return await apiClient.get('/api/exercises/phases');
+  },
+
+  // フェーズ別運動一覧取得（パブリック）
+  getExercisesByPhase: async (phase) => {
+    return await apiClient.get(`/api/exercises/phase/${phase}`);
+  },
+
+  // 運動詳細取得（パブリック）
+  getExerciseDetails: async (exerciseId) => {
+    return await apiClient.get(`/api/exercises/detail/${exerciseId}`);
+  },
+
+  // 運動カテゴリー一覧取得（認証必要）
   getCategories: async (phase, token) => {
     const params = phase ? `?phase=${phase}` : '';
     return await apiClient.get(`/api/exercises/categories${params}`, {
@@ -74,30 +89,16 @@ export const exerciseAPI = {
     });
   },
 
-  // フェーズ別運動一覧取得
-  getExercisesByPhase: async (phase, token) => {
-    return await apiClient.get(`/api/exercises/phase/${phase}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-  },
-
-  // カテゴリー別運動一覧取得
+  // カテゴリー別運動一覧取得（認証必要）
   getExercisesByCategory: async (categoryId, token) => {
     return await apiClient.get(`/api/exercises/category/${categoryId}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
   },
 
-  // 患者の運動プラン取得
+  // 患者の運動プラン取得（認証必要）
   getPatientExercisePlan: async (patientId, phase, token) => {
     return await apiClient.get(`/api/exercises/patient/${patientId}/plan?phase=${phase}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-  },
-
-  // 運動詳細取得
-  getExerciseDetails: async (exerciseId, token) => {
-    return await apiClient.get(`/api/exercises/${exerciseId}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
   },

@@ -66,38 +66,27 @@ const ExerciseMenuScreen = ({ navigation }) => {
   // 公開APIから運動データを取得
   const fetchPublicExerciseData = async (phase) => {
     try {
-      // APIからフェーズ別の運動データを取得（パブリックエンドポイント）
-      const response = await fetch(`http://localhost:3000/api/exercises/public/phase/${phase}`);
-      if (response.ok) {
-        const exercises = await response.json();
-        
-        // 運動データをカテゴリ別にグループ化
-        const categorizedExercises = exercises.reduce((acc, exercise) => {
-          const category = exercise.category_name || 'その他';
-          if (!acc[category]) {
-            acc[category] = [];
-          }
-          acc[category].push({
-            id: exercise.id,
-            exercise_name: exercise.name,
-            description: exercise.description,
-            instructions: exercise.instructions,
-            category_name: category,
-            assigned_sets: exercise.default_sets,
-            assigned_reps: exercise.default_reps,
-            duration: exercise.default_duration_seconds > 0 ? `${exercise.default_duration_seconds}秒` : '',
-            difficulty_level: exercise.difficulty_level,
-            requires_ai_analysis: exercise.requires_ai_analysis,
-            is_completed: false,
-          });
-          return acc;
-        }, {});
-        
-        // データをフラットな配列に変換
-        const exerciseList = Object.values(categorizedExercises).flat();
+      // exerciseAPI.getExercisesByPhaseを使用してAPIからデータを取得
+      const { exerciseAPI } = await import('../services/api');
+      const phaseData = await exerciseAPI.getExercisesByPhase(phase);
+      
+      if (phaseData && phaseData.exercises) {
+        // データを適切なフォーマットに変換
+        const exerciseList = phaseData.exercises.map(exercise => ({
+          id: exercise.id,
+          exercise_name: exercise.name,
+          description: exercise.description,
+          instructions: exercise.instructions,
+          category_name: exercise.category || 'その他',
+          assigned_sets: exercise.sets,
+          assigned_reps: exercise.reps,
+          duration: exercise.duration ? `${exercise.duration}分` : '',
+          difficulty_level: exercise.difficulty,
+          requires_ai_analysis: exercise.requiresAI,
+          is_completed: false,
+        }));
         setLocalPatientPlan(exerciseList);
       } else {
-        console.error('Failed to fetch exercise data:', response.status);
         // フォールバックとしてダミーデータを使用
         const dummyPlan = getDummyExercisePlan(phase);
         setLocalPatientPlan(dummyPlan);
