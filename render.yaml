@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: acl-rehab-app
+    env: node
+    plan: starter
+    buildCommand: npm ci
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: FILE_RETENTION_HOURS
+        value: 24
+      - key: ANALYSIS_RETENTION_DAYS
+        value: 7
+      - key: MAX_FILE_SIZE
+        value: 104857600
+    healthCheckPath: /health
+    autoDeploy: true
+    region: oregon
+    numInstances: 1
+    disk:
+      name: uploads
+      mountPath: /app/uploads
+      sizeGB: 1
